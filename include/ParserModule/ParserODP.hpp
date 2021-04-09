@@ -69,7 +69,7 @@ CommandType ParserODP::ProcessBuffer(SenderType sender, const std::string& buffe
   }
   clog::ConsoleOutput::print("[ParserODP <STATUS>]: Ready to read data.");
   BufferReader::read(listBytes2Read, remainderContent.substr(beginOfRawData), container);
-  clog::ConsoleOutput::print("[ParserODP <STATUS>]: All the data readed.");
+  clog::ConsoleOutput::print("[ParserODP <STATUS>]: All the data read.");
   return command;
 }
 
