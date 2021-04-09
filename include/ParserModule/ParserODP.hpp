@@ -23,6 +23,7 @@ private:
   std::unordered_map<std::string, std::vector<uint8_t>> commands_server2user;
 public:
   static CommandType ProcessBuffer(SenderType sender, const std::string& bufferContent, std::vector<std::string>& container);
+  static ParserODP& getGlobalParserODP();
 };
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -30,7 +31,6 @@ public:
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
 CommandType ParserODP::ProcessBuffer(SenderType sender, const std::string& bufferContent, std::vector<std::string>& container){
-  static ParserODP INSTANCE_PARSER_ODP;
   CommandType command;
   std::stringstream bufferSStream(bufferContent);
   std::string command_str, remainderContent;
@@ -41,11 +41,11 @@ CommandType ParserODP::ProcessBuffer(SenderType sender, const std::string& buffe
   std::unordered_map<std::string, std::vector<uint8_t>>::iterator comm_it;
 
   if(sender == SenderType::Server)
-    comm_it = INSTANCE_PARSER_ODP.commands_server2user.find(command_str);
+    comm_it = getGlobalParserODP().commands_server2user.find(command_str);
   else if(sender == SenderType::User)
-    comm_it = INSTANCE_PARSER_ODP.commands_user2server.find(command_str);
+    comm_it = getGlobalParserODP().commands_user2server.find(command_str);
   clog::ConsoleOutput::print("[ParserODP <COMMAND TOKEN>]: " + command_str);
-  command = INSTANCE_PARSER_ODP.checkType(command_str);
+  command = getGlobalParserODP().checkType(command_str);
   std::queue<uint32_t> listBytes2Read;
   std::size_t beginOfRawData = 0;
   if(command == CommandType::AskList){//SPECIAL CASE
@@ -113,6 +113,11 @@ ParserODP::ParserODP(){
   commands_server2user[TOKEN_COMM_FILEUSER] = {2, 2, 1, 2, 5};
   commands_server2user[TOKEN_COMM_FILEACCEPT] = {};
   commands_server2user[TOKEN_COMM_EXIT] = {};
+}
+
+ParserODP& ParserODP::getGlobalParserODP(){
+  static ParserODP INSTANCE_PARSER_ODP;
+  return INSTANCE_PARSER_ODP;
 }
 
 }

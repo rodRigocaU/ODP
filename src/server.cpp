@@ -9,5 +9,10 @@ int main(){
   for(auto& i : rawData){
     std::cout << i << std::endl;
   }
+  std::vector<std::string> rawData2;
+  odp::CommandType comm_type2 = odp::ParserODP::ProcessBuffer(odp::SenderType::User, "mu#0503004juliowoohola", rawData2);
+  for(auto& i : rawData2){
+    std::cout << i << std::endl;
+  }
   return 0;
 }
