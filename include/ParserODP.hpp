@@ -30,22 +30,22 @@ enum CommandType{
 class ParserODP{
 private:
   ParserODP();
-  
-  std::unordered_map<std::string, std::vector<uint8_t>> commands_settings;
+  void readCommLogin();
+  std::unordered_map<std::string, std::vector<uint8_t>> commands_user2server, commands_server2user;
 public:
-  static CommandType ProcessBuffer(const std::string& bufferContent);
+  static CommandType ProcessBuffer(SenderType sender, const std::string& bufferContent);
 };
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-CommandType ParserODP::ProcessBuffer(const std::string& bufferContent){
+CommandType ParserODP::ProcessBuffer(SenderType sender, const std::string& bufferContent){
   static ParserODP INSTANCE_PARSER_ODP;
 }
 
 ParserODP::ParserODP(){
-  commands_settings[TOKEN_COMM_LOGIN_U2S] = {1,2,3};
+  commands_user2server[TOKEN_COMM_LOGIN] = {2,2};
 }
 
 }
