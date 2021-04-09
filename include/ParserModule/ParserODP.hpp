@@ -46,30 +46,34 @@ CommandType ParserODP::ProcessBuffer(SenderType sender, const std::string& buffe
     comm_it = getGlobalParserODP().commands_user2server.find(command_str);
   clog::ConsoleOutput::print("[ParserODP <COMMAND TOKEN>]: " + command_str);
   command = getGlobalParserODP().checkType(command_str);
-  std::queue<uint32_t> listBytes2Read;
-  std::size_t beginOfRawData = 0;
-  if(command == CommandType::AskList){//SPECIAL CASE
-    std::size_t counter = 1;
-    for(; counter <= std::stoi(remainderContent.substr(0, comm_it->second[0])); ++counter){
-      uint32_t value = std::stoi(remainderContent.substr(counter * 2, comm_it->second[1]));
-      listBytes2Read.push(value);
-      clog::ConsoleOutput::print("[ParserODP <BYTE SIZE>]: " + std::to_string(value));
+  if(!comm_it->second.empty()){
+    std::queue<uint32_t> listBytes2Read;
+    std::size_t beginOfRawData = 0;
+    if(command == CommandType::AskList){//SPECIAL CASE
+      std::size_t counter = 1;
+      for(; counter <= std::stoi(remainderContent.substr(0, comm_it->second[0])); ++counter){
+        uint32_t value = std::stoi(remainderContent.substr(counter * 2, comm_it->second[1]));
+        listBytes2Read.push(value);
+        clog::ConsoleOutput::print("[ParserODP <BYTE SIZE>]: " + std::to_string(value));
+      }
+      beginOfRawData = counter * 2;
     }
-    beginOfRawData = counter * 2;
-  }
-  else{
-    std::size_t counter = 0;
-    for(uint8_t& digitCounter : comm_it->second){
-      uint32_t value = std::stoi(remainderContent.substr(counter, digitCounter));
-      listBytes2Read.push(value);
-      clog::ConsoleOutput::print("[ParserODP <BYTE SIZE>]: " + std::to_string(value));
-      counter += digitCounter;
+    else{
+      std::size_t counter = 0;
+      for(uint8_t& digitCounter : comm_it->second){
+        uint32_t value = std::stoi(remainderContent.substr(counter, digitCounter));
+        listBytes2Read.push(value);
+        clog::ConsoleOutput::print("[ParserODP <BYTE SIZE>]: " + std::to_string(value));
+        counter += digitCounter;
+      }
+      beginOfRawData = counter;
     }
-    beginOfRawData = counter;
+    clog::ConsoleOutput::print("[ParserODP <STATUS>]: Ready to read data.");
+    BufferReader::read(listBytes2Read, remainderContent.substr(beginOfRawData), container);
+    clog::ConsoleOutput::print("[ParserODP <STATUS>]: All the data read.");
   }
-  clog::ConsoleOutput::print("[ParserODP <STATUS>]: Ready to read data.");
-  BufferReader::read(listBytes2Read, remainderContent.substr(beginOfRawData), container);
-  clog::ConsoleOutput::print("[ParserODP <STATUS>]: All the data read.");
+  else
+    clog::ConsoleOutput::print("[ParserODP <STATUS>]: No data to read, only the command.");
   return command;
 }
 
