@@ -6,7 +6,6 @@
 
 namespace clog{
 
-frozonus
 //PATTERN->SINGLETON
 class ConsoleOutput{
 private:
