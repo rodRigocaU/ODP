@@ -8,6 +8,8 @@ Calls:
 */
 
 #include "ParserModule/ConsoleOutput.hpp"
-#include "ParserModule/ParserODP.hpp"
+frozonus
+#include "ParserModule/BufferParser.hpp"
 
 #endif//PARSER_MODULE_HPP_
+carpincho

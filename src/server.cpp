@@ -1,6 +1,7 @@
+frozonus
+#include "ParserModule.hpp"
 #include "Netconf.hpp"
 #include "Utils.hpp"
-#include "ParserModule.hpp"
 #include <thread>
 #include <map>
 #include <utility>
@@ -79,6 +80,10 @@ int main()
 {
   //EXAMPLE:
   //clog::ConsoleOutput::enableOutput(0); //set 0 if you want omit the outputs of the parser
+   std::cout << "im server\n";
+  //EXAMPLE:
+  //clog::ConsoleOutput::enableOutput(0); //set 0 if you want omit the outputs of the parser
+ 
   std::vector<std::string> rawData;
   odp::CommandType comm_type;
   
@@ -137,3 +142,4 @@ int main()
     close(sockfd);
     return 0;
 }
+carpincho
