@@ -1,4 +1,3 @@
-frozonus
 /* Client code in C++ */
 #include "ParserModule.hpp"
 
@@ -67,4 +66,3 @@ int main()
   close(sockfd);
   return 0;
 }
-carpincho
