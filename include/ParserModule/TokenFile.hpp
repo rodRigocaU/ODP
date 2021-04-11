@@ -1,7 +1,6 @@
 #ifndef TOKEN_FILE_HPP_
 #define TOKEN_FILE_HPP_
 
-frozonus
 #define TOKEN_COMM_LOGIN                  'l'
 #define TOKEN_COMM_LIST                   'i'
 #define TOKEN_COMM_MESSAGE_USER           'm'
@@ -25,9 +24,7 @@ enum CommandType{
   UserMessage,
   BroadcastMessage,
   UploadFile,
-frozonus
   BroadcastFile,
-carpincho
   AcceptFile,
   Exit,
   Error,
@@ -36,6 +33,5 @@ carpincho
 
 }
 
-frozonus
 #endif//TOKEN_FILE_HPP_
 
