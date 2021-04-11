@@ -1,4 +1,3 @@
-frozonus
 #include "ParserModule.hpp"
 #include "Netconf.hpp"
 #include "Utils.hpp"
@@ -142,4 +141,3 @@ int main()
     close(sockfd);
     return 0;
 }
-carpincho
