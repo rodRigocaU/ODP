@@ -1,6 +1,7 @@
 #ifndef BUFFER_PARSER_HPP_
 #define BUFFER_PARSER_HPP_
 
+//OYE LUISILLO QUE CHUCHA HAGO 
 #include <cctype>
 #include <iostream>
 #include <queue>
@@ -15,6 +16,7 @@ class BufferParser{
 private:
   std::queue<std::size_t> bytes_to_read;
   std::pair<CommandType, std::list<uint8_t>> settings;
+  
 public:
   std::size_t getHeaderSize(SenderType senderType, const char& command);
   std::size_t getContentSize(const std::string& headerString);
@@ -32,7 +34,7 @@ std::size_t BufferParser::getHeaderSize(SenderType senderType, const char& comma
   for(std::list<uint8_t>::iterator::reference nDigit : settings.second){
     sumOfBytes += static_cast<std::size_t>(nDigit);
   }
-  return sumOfBytes;
+  return ((settings.first == CommandType::AskList)?settings.second[0]:sumOfBytes);
 }
 
 std::size_t BufferParser::getContentSize(const std::string& headerString){
