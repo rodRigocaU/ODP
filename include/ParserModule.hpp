@@ -8,6 +8,7 @@ Calls:
 */
 
 #include "ParserModule/ConsoleOutput.hpp"
+
 #include "ParserModule/BufferParser.hpp"
 
 #endif//PARSER_MODULE_HPP_

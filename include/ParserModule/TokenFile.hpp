@@ -11,6 +11,7 @@
 #define TOKEN_COMM_ERROR                  'e'
 
 
+
 namespace odp{
 
 enum SenderType{
@@ -23,6 +24,7 @@ enum CommandType{
   UserMessage,
   BroadcastMessage,
   UploadFile,
+  BroadcastFile,
   AcceptFile,
   Exit,
   Error,
@@ -32,3 +34,4 @@ enum CommandType{
 }
 
 #endif//TOKEN_FILE_HPP_
+
