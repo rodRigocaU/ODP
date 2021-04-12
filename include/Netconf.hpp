@@ -49,7 +49,7 @@ void setaddressinfo(char* PORT, struct addrinfo*& res){
   
   struct addrinfo hints;
   memset(&hints, 0, sizeof hints);
-  hints.ai_family = AF_UNSPEC;     // use IPv4 or IPv6, whichever
+  hints.ai_family =  AF_UNSPEC;    // use IPv4 or IPv6, whichever
   hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
   hints.ai_flags = AI_PASSIVE;     // para que el programa complete mi propio IP
 
@@ -83,6 +83,8 @@ void setmainsock(struct addrinfo *res, int &sockfd, int BACKLOG = 10)
     exit(1);
   }
 
+  
+
   // bind it to the port we passed in to getaddrinfo():
   // int bind(int sockfd, struct sockaddr *my_addr, int addrlen);
   if (-1 == bind(sockfd, res->ai_addr, res->ai_addrlen))
@@ -111,8 +113,6 @@ void setmainsock(struct addrinfo *res, int &sockfd, int BACKLOG = 10)
       close(sockfd);
       exit(EXIT_FAILURE);
     }
-
-
 }
 
 

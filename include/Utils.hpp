@@ -4,21 +4,6 @@
 
 using namespace std;
 
-// string to int
-int strtoi(const string& str){
-  stringstream ss;
-  ss << str;
-  int n;
-  ss >> n;
-  return n;
-}
-// int to string
-string itostr(int n){
-  stringstream ss;
-  ss << n;
-  return ss.str();
-}
-
 // retorna el string de un número, con
 // zeros a la izquierda dependiendo de la cantidad de dígitos
 // p.ej. digitsitostr(15,5) -> 00015

@@ -1,6 +1,4 @@
-frozonus
 .vscode
-/build
-
 build/
-carpincho
+*.cpp~
+*.hpp~

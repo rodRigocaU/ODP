@@ -2,11 +2,8 @@
 #include "Netconf.hpp"
 #include "Utils.hpp"
 #include <thread>
-#include <map>
 #include <utility>
 #include <string>
-
-#define MAXSIZE 100210 // el mensaje máximo posible del protocolo es 100206
 
 using namespace std;
 
@@ -15,7 +12,7 @@ struct User{
   string password;
 };
 
-map <std::string, User> users; // (username: <sockfd, password>)
+std::unordered_map <std::string, User> users; // (username: <sockfd, password>)
 
 // en esa función lo que haremos será crear un nuevo thread para un nuevo usuario ya registrado,
 //y escucharemos todas sus peticiones
@@ -87,56 +84,63 @@ int main()
   odp::CommandType comm_type;
   
   struct sockaddr_storage their_addr; // se utilizará en la función connect()
-    socklen_t addr_size;                // se utilizará en la función connect()
+  socklen_t addr_size;                // se utilizará en la función connect()
 
     struct addrinfo *res;
 
     setaddressinfo("50000", res);
+
     int sockfd;
-    
     setmainsock(res, sockfd);
 
 
     addr_size = sizeof their_addr;
     int nbytes;
-    char buffer[MAXSIZE]; // el buffer es de 999, ya que el mensaje
-    string msg;
-    User usuario;
+    char buffertoken[1]; // el buffer es de 999, ya que el mensaje
+    char bufferheader[4];
+    char buffercontent[99+99];
     while (true)
     {
-        // el nuevo file descriptor resultante de la conexión
-        int connectfd = accept(sockfd, (struct sockaddr *)&their_addr, &addr_size);
-        if (0 > connectfd)
+      // el nuevo file descriptor resultante de la conexión
+      int connectfd = accept(sockfd, (struct sockaddr *)&their_addr, &addr_size);
+      if (0 > connectfd)
 	    {
 	      perror("error accept failed");
 	      close(sockfd);
 	      exit(EXIT_FAILURE);
 	    }
 
-        cout << "Nuevo cliente conectado!" << endl;
-        // imprimimos la dirección del nuevo cliente aceptado
-        get_in_information(&their_addr);
+      cout << "Nuevo cliente conectado!" << endl;
+      // imprimimos la dirección del nuevo cliente aceptado
+      get_in_information(&their_addr);
+      
+      // Aplicación
+	    // lo primero en el protocolo es recibir la letra "l" de parte del usuario
+      nbytes = recv(connectfd, buffertoken, 1, 0);
+      string message(buffertoken);
+      size_t sizem = odp::getsizeheader(message);
+	    nbytes = recv(connectfd, bufferheader, sizem, 0);
+	    message = bufferheader;
+	    sizem = odp::getsizecontent(message);
+	    nbytes = recv(connect, buffercontent, sizem, 0);
+	    buffercontent[nbytes] = '\0';
+	    message = buffer;
+	    vector<string> newuserdata = odp::readbuffer(message);
 
-	// lo primero en el protocolo es recibir su nombre de usuario
-	// y constraseña, obligadamente, para recién poder lanzar el thread
-	nbytes = recv(connectfd, buffer, MAXSIZE, 0);
-	buffer[nbytes] = '\0';
-	msg = buffer;
-	// lo primero es parsear el nombre de usuario y el password
-	comm_type = odp::ParserODP::ProcessBuffer(odp::SenderType::User, msg, rawData);
 	
-	/* aquí podría iniciarse la función registrar()*/
-	/* si el usuario no está registrado lo registramos */
-	if(users.find(rawData[0]) != users.end()){
-	  usuario.sockfd = connectfd;
-	  usuario.password = rawData[1];
-	  users[rawData[0]] = usuario;
-	  thread().detach();
-	}
-	else{
-	  nbytes = send(connectfd, "ERR#2LO", 7, 0);
-	  close(connectfd);
-	}
+	    /* aquí podría iniciarse la función registrar()*/
+	    /* si el usuario no está registrado lo registramos */
+	    if(users.find(newuserdata[0]) != users.end()){
+        User usuario;
+	      usuario.sockfd = connectfd;
+	      usuario.password = newuserdata[1];
+	      users[newuserdata[0]] = usuario;
+	      thread(handleuser, newuserdata[0]).detach();
+	    }
+	    else{
+	      nbytes = send(connectfd, "", 7, 0);
+	      close(connectfd);
+	    }
     }
     close(sockfd);
     return 0;
