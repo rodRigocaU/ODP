@@ -65,6 +65,7 @@ char tamaño_remitente[2];
 char * msg;
 char * remitente;
 }
+M
 -----------------------------------------------
 
 b	msg-bc
@@ -105,7 +106,7 @@ char * remitente;
 }
 --------------------------------------
 f	file_AN (Usuario no quiere el usuario)
-// archivo se recivio pero no se guardo
+// archivo se recibio pero no se guardo
 [user ---> Server]
 {
 char accion;//f

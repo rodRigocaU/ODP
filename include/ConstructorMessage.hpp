@@ -1,5 +1,6 @@
 #ifndef CONSTRUCTOR_MESSAGE_HPP_
 #define CONSTRUCTOR_MESSAGE_HPP_
+#include <cctype>
 #include <iostream>
 #include <string>
 #include <cmath>
@@ -23,7 +24,7 @@ namespace odp
   public:
     static std::string buildMessage(std::vector<std::string> &data, const char &command, SenderType senderType)
     {
-      std::pair<CommandType, std::list<uint8_t>> settings = CommandSettings::getSettings(command, senderType);
+      std::pair<CommandType, std::list<uint8_t>> settings = CommandSettings::getSettings(std::tolower(command), senderType);
       std::string buildedMessage;
       // Agregar tokens
       buildedMessage.push_back(command);

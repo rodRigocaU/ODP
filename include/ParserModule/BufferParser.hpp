@@ -1,7 +1,6 @@
 #ifndef BUFFER_PARSER_HPP_
 #define BUFFER_PARSER_HPP_
 
-//OYE LUISILLO QUE CHUCHA HAGO 
 #include <cctype>
 #include <iostream>
 #include <queue>

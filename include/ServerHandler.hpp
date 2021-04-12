@@ -58,14 +58,15 @@ namespace odp
                 {
                 case odp::CommandType::AskList:
                 {
+                    // primero leemos el header
                     nbytes = recv(curr_user.sockfd, buffer_header, sizem, 0);
                     buffer_header[nbytes] = '\0';
-                    message=buffer_header;
+                    message = buffer_header;
 
                     sizem = atoi(message) * 2; //6
 
                     nbytes = recv(curr_user.sockfd, buffer_header, size, 0);
-                    message=buffer_header; //110503
+                    message = buffer_header; //110503
 
                     sizem = ServerParser.getContentSize(message); //18 porque 11+05+03
 
@@ -74,12 +75,25 @@ namespace odp
 
                     data = ServerParser.getContentInTokens(message);
 
-                    message = odp::ConstructorMessage::buildMessage(data,'I',odp::SenderType::User);
-                    
+                    message = odp::ConstructorMessage::buildMessage(data, 'I', odp::SenderType::User);
+
                     write(curr_user.sockfd, message.c_str(), message.size());
                     break;
                 }
                 case odp::CommandType::UserMessage:
+                {
+                    //ejemplo
+
+                    //OE PERO NO EXISTE DESYINATARIO EN EL SERVIDOR A USUARIO
+                    /*
+                    char accion;//M
+                    char tamaño_msg[3];
+                    char tamaño_remitente[2];
+                    char * msg;
+                    char * remitente;
+                    */   
+                   // julio envía un "hola" a pancho
+                   // protocolo: m00405holapancho
                     // leemos el header
                     nbytes = recv(curr_user.sockfd, buffer_header, sizem, 0);
                     buffer_header[nbytes] = '\0';
@@ -87,42 +101,126 @@ namespace odp
                     // leemos el contenido
                     sizem = ServerParser.getContentSize(message);
                     nbytes = recv(curr_user.sockfd, buffer_content, sizem, 0);
-                    buffer[nbytes] = '\0';
-                    message = buffer;
-                    data = ServerParser.getContentInTokens(message);
-                    break;
-                case odp::CommandType::BroadcastMessage:
+                    buffer_content[nbytes] = '\0';
+                    message = buffer_content;
+                    data = ServerParser.getContentInTokens(message); //data_body y destinatario
 
+                    std::string destinatario = data[1]; //obtener el destinatario B
+
+                    // enviamos esto a pancho: M00405holajulio
+                    message = odp::ConstructorMessage::buildMessage(std::vector<std::string>({data[0], username}), 'M', odp::SenderType::User);
+                    // enviamos el mensaje al socketfd del destinatario
+                    write(ActiveUsers[destinatario].sockfd, message.c_str(), message.size());
+
+                    break;
+                }
+                case odp::CommandType::BroadcastMessage:
+                {
+                    /*
+                    [Server ----> user]
+                    {
+                    char accion;//B
+                    char tamaño_msg[3];
+                    char tamaño_remitente[2];
+                    char * msg;
+                    char * remitente;
+                    }
+                    */
+
+                    // EJEMPLO [user->server]
+                    // b004Hola
+                    
                     nbytes = recv(curr_user.sockfd, buffer_header, sizem, 0);
                     buffer_header[nbytes] = '\0';
 
-                    string Messa(buffer_header);
+                    message = buffer_header; //004
+                    // obtenemos el tamaño del content
+                    sizem = ServerParser.getContentSize(message); //4
 
-                    std::size_t size1 = atoi(Messa); //004
-
-                    nbytes = recv(curr_user.sockfd, buffer_header, sizem, 0);
-
-                    string Remi(buffer_header);
-                    std::size_t size2 = atoi(Remi);
-
-                    nbytes = recv(curr_user.sockfd, buffer_header, sizem, 0);
-
-                    string AllMessa(buffer_header);
-
+                    // leemos el content
+                    nbytes = recv(curr_user.sockfd, buffer_content, sizem, 0);
+                    buffer_content[nbytes] = '\0';
+                    message = buffer_content; 
+                    // data = [msg] = [hola]
+                    data = ServerParser.getContentInTokens(message);
                     
+                    // B00405holajulio
+                    message = odp::ConstructorMessage::buildMessage(std::vector<std::string>({data[0], username}), 'B', odp::SenderType::User);
+                    
+                    for(auto &User : ActiveUsers){
+                        write(User.second.sockfd, message.c_str(), message.size());
+                    }
                     break;
+                }
                 case odp::CommandType::UploadFile:
+                {
                     
+                    //EJEMPLO [user->server]
+                    /*
+                    char accion;/U
+                    char tamaño_file_name[3];
+                    char tamaño_file_data[10];
+                    char tamaño_remitente[2];
+                    char * file_name;
+                    char * file_data;
+                    char * remitente;
+                    }*/
+                    // julio envia un file a pancho, el file se llama [hola.txt] y su contenido es "hola_pancho"
+                    // ejemplo: u008000000001005hola.txthola_panchopancho
+                    
+                    nbytes = recv(curr_user.sockfd, buffer_header, sizem, 0);
+                    buffer_header[nbytes] = '\0';
 
+                    message = buffer_header; //008000000001005
+                    // obtenemos el tamaño del content
+                    sizem = ServerParser.getContentSize(message); // 8+10+5=23
+                    // leemos el contenido
+                    nbytes = recv(curr_user.sockfd, buffer_content, sizem, 0);// hola.txthola_panchopancho
+                    buffer_content[nbytes] = '\0';
+                    message = buffer_content;
+                    // data = [hola.txt,hola_pancho,pancho]
+                    data = ServerParser.getContentInTokens(message);
+                    std::string destinatario = data[2];// pancho
+                    // ahora contruimos el message
+                    // U008000000001005hola.txthola_panchojulio
+                    message = odp::ConstructorMessage::buildMessage(std::vector<std::string>({data[0], data[1], username}), 'U', odp::SenderType::User);
+                    
+                    write(ActiveUsers[destinatario].sockfd, message.c_str(), message.size());
+                    
                     break;
+                }
                 case odp::CommandType::AcceptFile:
-                    // broadcastfile
-
+                {
+                    /*{
+                    char acccion;//F  se rechaso el archivo 
+                    char tamaño_user_name[2]; 
+                    char * user_name;
+                    }*/
                     // singlefile
-
+                    // julio envió un archivo a pancho, pero pancho no lo aceptó, entonces le envía un mensaje de rechazo
+                    // ejemplo: f05julio
+                    // primero leemos el header
+                    nbytes = recv(curr_user.sockfd, buffer_header, sizem, 0);// 05
+                    buffer_header[nbytes] = '\0';
+                    message = buffer_header;
+                    // ahora obtenemos el tamaño del contenido
+                    sizem = ServerParser.getContentSize(message); // 5, por "julio"
+                    // leemos el contenido
+                    nbytes = recv(curr_user.sockfd, buffer_content, sizem, 0);// julio
+                    buffer_content[sizem] = '\0';
+                    message = buffer_content;
+                    // data = [julio]
+                    data = ServerParser.getContentInTokens(message);
+                    // message = F05pancho
+                    message = odp::ConstructorMessage::buildMessage(std::vector<std::string>({username}), 'F', odp::SenderType::User);
+                    write(ActiveUsers[data[0]].sockfd, message.c_str(), message.size());
                     break;
+                }
                 case odp::CommandType::Exit:
+                {
+                    // julio envía el mensaje de salida al usuario
                     break;
+                }
                 case odp::CommandType::None:
                     cout << "not known message in protocol" << endl;
                     break;

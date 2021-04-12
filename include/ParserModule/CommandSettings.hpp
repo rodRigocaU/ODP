@@ -27,6 +27,7 @@ public:
 
 CommandSettings::CommandSettings(){
   user2server[TOKEN_COMM_LOGIN] = {CommandType::Login, {2, 2}};
+  user2server[TOKEN_COMM_LIST] = {CommandType::AskList, {}};
   user2server[TOKEN_COMM_MESSAGE_USER] = {CommandType::UserMessage, {3, 2}};
   user2server[TOKEN_COMM_MESSAGE_BROADCAST] = {CommandType::BroadcastMessage, {3}};
   user2server[TOKEN_COMM_UPLOAD_FILE] = {CommandType::UploadFile, {3, 10, 2}};
