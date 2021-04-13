@@ -14,7 +14,7 @@ namespace odp{
 class BufferParser{
 private:
   std::queue<std::size_t> bytes_to_read;
-  std::pair<CommandType, std::list<uint8_t>> settings;
+  std::pair<CommandType, std::vector<uint8_t>> settings;
   
 public:
   std::size_t getHeaderSize(SenderType senderType, const char& command);
@@ -30,7 +30,7 @@ public:
 std::size_t BufferParser::getHeaderSize(SenderType senderType, const char& command){
   settings = CommandSettings::getSettings(std::tolower(command), senderType);
   std::size_t sumOfBytes = 0;
-  for(std::list<uint8_t>::iterator::reference nDigit : settings.second){
+  for(std::vector<uint8_t>::iterator::reference nDigit : settings.second){
     sumOfBytes += static_cast<std::size_t>(nDigit);
   }
   return ((settings.first == CommandType::AskList)?settings.second[0]:sumOfBytes);

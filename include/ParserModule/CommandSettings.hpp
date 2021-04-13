@@ -1,7 +1,7 @@
 #ifndef COMMAND_SETTINGS_HPP_
 #define COMMAND_SETTINGS_HPP_
 
-#include <list>
+#include <vector>
 #include <string>
 #include <unordered_map>
 
@@ -11,14 +11,14 @@ namespace odp{
 //PATTERN->SINGLETON
 class CommandSettings{
 private:
-  typedef std::pair<CommandType, std::list<uint8_t>> Settings;
+  typedef std::pair<CommandType, std::vector<uint8_t>> Settings;
   std::unordered_map<char, Settings> user2server;
   std::unordered_map<char, Settings> server2user;
 
   CommandSettings();
 public:
   static CommandSettings& getGlobalCommandSettings();
-  static std::pair<CommandType, std::list<uint8_t>>& getSettings(const char& command, SenderType senderType);
+  static std::pair<CommandType, std::vector<uint8_t>>& getSettings(const char& command, SenderType senderType);
 };
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -49,7 +49,7 @@ CommandSettings& CommandSettings::getGlobalCommandSettings(){
   return INSTANCE_COMMAND_SETTINGS;
 }
 
-std::pair<CommandType, std::list<uint8_t>>& CommandSettings::getSettings(const char& command, SenderType senderType){
+std::pair<CommandType, std::vector<uint8_t>>& CommandSettings::getSettings(const char& command, SenderType senderType){
   std::unordered_map<char, Settings>::iterator it;
   if(senderType == SenderType::User){
     it = getGlobalCommandSettings().user2server.find(command);

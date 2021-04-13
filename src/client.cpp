@@ -40,7 +40,7 @@ int main()
     std::cout << "Password:";
     std::getline(cin, password);
 
-    std::string message = odp::ConstructorMessage::buildMessage(std::vector<std::string>({username, password}), 'l', odp::SenderType::Server);
+    std::string message = odp::ConstructorMessage::buildMessage({username, password}, 'l', odp::SenderType::Server);
 
     write(sockfd, message.c_str(), message.length());
 
@@ -52,7 +52,7 @@ int main()
   odp::ClientHandler c_handler(sockfd, username, password);
   
   // Escuchar al servidor
-  std::thread(&odp::ClientHandller::handlerecv, &c_handler).detach();
+  std::thread(&odp::ClientHandler::handlerecv, &c_handler).detach();
   
   // Enviar Comandos al servidor
   c_handler.handlesend();

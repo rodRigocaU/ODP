@@ -8,7 +8,6 @@
 
 namespace odp
 {
-
     class ClientHandler
     {
     private:
@@ -18,7 +17,7 @@ namespace odp
         odp::BufferParser ClientParser;
 
     public:
-        ClientHandler(int _sockfd, const string &_username, const string &_password)
+        ClientHandler(int _sockfd, const std::string& _username, const std::string& _password)
         {
             username = _username;
             password = _password;
@@ -33,8 +32,8 @@ namespace odp
 
             std::vector<std::string> data; // el vector donde entrará la data
             std::string message;
-            size_t sizem;   // [0, MAXSIZE]
-            ssize_t nbytes; // [-1, MAXSIZE]
+            std::size_t sizem;   // [0, MAXSIZE]
+            std::ssize_t nbytes; // [-1, MAXSIZE]
 
             while (true)
             {
@@ -55,17 +54,17 @@ namespace odp
                     buffer_header[nbytes] = '\0';
                     message = buffer_header;
 
-                    sizem = atoi(message) * 2; //6
+                    sizem = std::stoi(message) * 2; //6
 
                     nbytes = recv(sockfd, buffer_header, sizem, 0);
                     message = buffer_header; //110503
 
-                    sizem = ServerParser.getContentSize(message); //18 = 11+05+03
+                    sizem = ClientParser.getContentSize(message); //18 = 11+05+03
 
-                    nbytes = recv(sockfd, buffer_content, size, 0);
+                    nbytes = recv(sockfd, buffer_content, sizem, 0);
                     message = buffer_content; //juliosantiestabanlui...
 
-                    data = ServerParser.getContentInTokens(message);
+                    data = ClientParser.getContentInTokens(message);
                     // presentamos la información
                     std::cout << "\nLista de Usuarios en el chat:\n";
                     // recorremos toda la lista de usuarios
@@ -85,7 +84,8 @@ namespace odp
                     // obtenemos el tamaño del contenido
                     sizem = ClientParser.getContentSize(message);
                     nbytes = recv(sockfd, buffer_content, sizem, 0);
-                    buffer_content[nbytes] = '\0' message = buffer_content;
+                    buffer_content[nbytes] = '\0';
+                    message = buffer_content;
                     // extraemos los datos
                     data = ClientParser.getContentInTokens(message);
                     // presentamos la data
@@ -104,14 +104,14 @@ namespace odp
 
                     message = buffer_header; //00405
                     // obtenemos el tamaño del content
-                    sizem = ServerParser.getContentSize(message); //9
+                    sizem = ClientParser.getContentSize(message); //9
 
                     // leemos el contenido
-                    nbytes = recv(curr_user.sockfd, buffer_content, sizem, 0);
+                    nbytes = recv(sockfd, buffer_content, sizem, 0);
                     buffer_content[nbytes] = '\0';
                     message = buffer_content;
                     // data = [Hola,julio]
-                    data = ServerParser.getContentInTokens(message);
+                    data = ClientParser.getContentInTokens(message);
                     // presentamos la información
                     // data = [mensaje, remitente]
                     std::cout << "\nMensaje global de[" << data[1] << "]:\n";
@@ -134,7 +134,7 @@ namespace odp
                     buffer_content[nbytes] = '\0';
                     message = buffer_content;
                     // data = [hola.txt,hola_pancho,julio]
-                    data = ServerParser.getContentInTokens(message);
+                    data = ClientParser.getContentInTokens(message);
 
                     char accept; // char para aceptar el archivo
                     std::cout << "\nNuevo archivo \"" << data[0] << "\" de [" << data[2] << "] aceptar [y/n]?: ";
@@ -150,8 +150,8 @@ namespace odp
                     else
                     {
                         // si el archivo fué rechazado, enviamos el mensaje: f05pancho
-                        message = odp::ConstructorMessage::buildMessage(std::vector<std::string>({username}), 'f', odp::SenderType::Server);
-                        send(socketfd, message.c_str(), message.size(), 0); // enviamos el mensaje de error
+                        message = odp::ConstructorMessage::buildMessage({username}, 'f', odp::SenderType::Server);
+                        send(sockfd, message.c_str(), message.size(), 0); // enviamos el mensaje de error
                     }
                     break;
                 }
@@ -165,28 +165,26 @@ namespace odp
                     buffer_header[nbytes] = '\0';
                     message = buffer_header;
                     // ahora obtenemos el tamaño del contenido
-                    sizem = ServerParser.getContentSize(message); // 5, por "julio"
+                    sizem = ClientParser.getContentSize(message); // 5, por "julio"
                     // leemos el contenido
                     nbytes = recv(sockfd, buffer_content, sizem, 0); // julio
                     buffer_content[sizem] = '\0';
                     message = buffer_content;
                     // data = [julio]
-                    data = ServerParser.getContentInTokens(message);
+                    data = ClientParser.getContentInTokens(message);
                     std::cout << "[" << data[0] << "] no aceptó tu archivo\n";
                     break;
                 }
                 case odp::CommandType::Exit:
                 {
                     // el server aceptó tu retiro del chat, X
-                    shutdown(sockfd, SHUT_RWD);
                     close(sockfd); // cerramos nuestro socket
-                    exit_chat = 1;
                     exit(1); // finalizamos todo el programa
                     break;
                 }
                 case odp::CommandType::Error:
                 {
-                    nbytes = recv(socketfd, buffer_content, 20, 0);
+                    nbytes = recv(sockfd, buffer_content, 20, 0);
                     buffer_content[nbytes] = '\0';
                     std::cout << "\nNuevo error: " << buffer_content << "\n";
                     break;
@@ -225,7 +223,7 @@ namespace odp
             // Para Cayro
             help();
             std::string message;
-            ssize_t nbytes;
+            std::ssize_t nbytes;
             while (true)
             {
                 message.clear();
