@@ -63,6 +63,7 @@ namespace odp
                 {
                 case odp::CommandType::Login:
                 {
+                    std::cout << "login\n";
                     // Leer el header
                     nbytes = recv(sockfd, buffer_header, sizem, 0);
                     message = buffer_header;
@@ -88,7 +89,7 @@ namespace odp
                     else
                     {
                         std::vector<std::string> err({ERROR_MESSAGE_LOGIN});
-                        message = odp::ConstructorMessage::buildMessage(err, 'E', odp::SenderType::User);
+                        message = odp::ConstructorMessage::buildMessage(err, 'E', odp::SenderType::Server);
                         send(curr_user.sockfd, message.c_str(), message.size(), 0);
                     }
                     break;
@@ -101,7 +102,7 @@ namespace odp
                         data.push_back(activeuser.first);
                     }
 
-                    message = odp::ConstructorMessage::buildMessage(data, 'I', odp::SenderType::User);
+                    message = odp::ConstructorMessage::buildMessage(data, 'I', odp::SenderType::Server);
 
                     write(curr_user.sockfd, message.c_str(), message.size());
                     break;
@@ -129,7 +130,7 @@ namespace odp
                         // el usuario existe
                         // enviamos esto a pancho: M00405holajulio
                         std::vector<std::string> send_data({data[0], username});
-                        message = odp::ConstructorMessage::buildMessage(send_data, 'M', odp::SenderType::User);
+                        message = odp::ConstructorMessage::buildMessage(send_data, 'M', odp::SenderType::Server);
                         // enviamos el mensaje al sockfd del destinatario
                         write(ActiveUsers[destinatario].sockfd, message.c_str(), message.size());
                     }
@@ -137,7 +138,7 @@ namespace odp
                     {
                         // el usuario no existe, error
                         std::vector<std::string> err({data[0], username});
-                        message = odp::ConstructorMessage::buildMessage(err, 'E', odp::SenderType::User);
+                        message = odp::ConstructorMessage::buildMessage(err, 'E', odp::SenderType::Server);
                         send(curr_user.sockfd, message.c_str(), message.size(), 0);
                     }
                     break;
@@ -163,7 +164,7 @@ namespace odp
 
                     // B00405holajulio
                     std::vector<std::string> send_data({data[0], username});
-                    message = odp::ConstructorMessage::buildMessage(send_data, 'B', odp::SenderType::User);
+                    message = odp::ConstructorMessage::buildMessage(send_data, 'B', odp::SenderType::Server);
 
                     // enviamos el mensaje a todos los usuarios, excepto al que lo envió
                     for (auto &User : ActiveUsers)
@@ -199,14 +200,14 @@ namespace odp
                         // ahora contruimos el message
                         // U008000000001005hola.txthola_panchojulio
                         std::vector<std::string> send_data({data[0], data[1], username});
-                        message = odp::ConstructorMessage::buildMessage(send_data, 'U', odp::SenderType::User);
+                        message = odp::ConstructorMessage::buildMessage(send_data, 'U', odp::SenderType::Server);
                         send(ActiveUsers[destinatario].sockfd, message.c_str(), message.size(), 0);
                     }
                     else
                     {
                         // el usuario no existe, error
                         std::vector<std::string> err({ERROR_USER_NOT_FOUND});
-                        message = odp::ConstructorMessage::buildMessage(err, 'E', odp::SenderType::User);
+                        message = odp::ConstructorMessage::buildMessage(err, 'E', odp::SenderType::Server);
                         send(curr_user.sockfd, message.c_str(), message.size(), 0);
                     }
                     break;
@@ -230,7 +231,7 @@ namespace odp
                     data = ServerParser.getContentInTokens(message);
                     // message = F05pancho
                     std::vector<std::string> send_data({username});
-                    message = odp::ConstructorMessage::buildMessage(send_data, 'F', odp::SenderType::User);
+                    message = odp::ConstructorMessage::buildMessage(send_data, 'F', odp::SenderType::Server);
                     write(ActiveUsers[data[0]].sockfd, message.c_str(), message.size());
                     break;
                 }
@@ -247,7 +248,7 @@ namespace odp
                 case odp::CommandType::None:
                 {
                     std::vector<std::string> err({ERROR_MESSAGE_NOT_IN_PROTOCOL});
-                    message = odp::ConstructorMessage::buildMessage(err, 'E', odp::SenderType::User);
+                    message = odp::ConstructorMessage::buildMessage(err, 'E', odp::SenderType::Server);
                     // enviamos un error
                     send(curr_user.sockfd, message.c_str(), message.size(), 0);
                     break;

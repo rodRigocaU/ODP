@@ -36,10 +36,7 @@ int main()
     std::getline(cin, send_data[0]);
     std::cout << "Password:";
     std::getline(cin, send_data[1]);
-    for(int i = 0; i < 2;i++){
-      std::cout << send_data[i] << std::endl;
-    }
-    std::string message = odp::ConstructorMessage::buildMessage(send_data, 'l', odp::SenderType::Server);
+    std::string message = odp::ConstructorMessage::buildMessage(send_data, 'l', odp::SenderType::User);
     std::cout << message << "\n";
     write(sockfd, message.c_str(), message.length());
 

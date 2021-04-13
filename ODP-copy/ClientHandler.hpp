@@ -154,7 +154,7 @@ namespace odp
                     {
                         send_data.push_back(username);
                         // si el archivo fué rechazado, enviamos el mensaje: f05pancho
-                        message = odp::ConstructorMessage::buildMessage(send_data, 'f', odp::SenderType::Server);
+                        message = odp::ConstructorMessage::buildMessage(send_data, 'f', odp::SenderType::User);
                         send(sockfd, message.c_str(), message.size(), 0); // enviamos el mensaje de error
                     }
                     break;
