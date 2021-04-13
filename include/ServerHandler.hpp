@@ -28,25 +28,24 @@ namespace odp
         //y escucharemos todas sus peticiones
         void handleuser(const std::string &username)
         {
-            odp::CommandType comm_type; // el tipo de comando AskList, etc
             User curr_user;             // current user
             curr_user.sockfd = ActiveUsers[username].second.sockfd;
             curr_user.password = ActiveUsers[username].second.password;
 
             char buffer_token[1];   // l,i,m,u,x,etc
-            char buffer_header[15]; // I03110305SantistebanLeePeter -> pasar en string 110305
+            char buffer_header[99*2+2]; // I03110305SantistebanLeePeter -> pasar en string 110305
             char buffer_content[100000];
 
             std::vector<std::string> data; // el vector donde entrará la data
             std::string message;
-            std::size_t sizem;
-
-            int nbytes;
+            std::size_t sizem; // [0, MAXSIZE]
+            std::ssize_t nbytes;// [-1, MAXSIZE]
 
             while (true)
             {
-                // siempre al inicio limpiamos el vector, ya que tiene la data del anterior read
+                // siempre al inicio limpiamos el vector y el mensaje, ya que tienen datos de lecturas anteriores
                 data.clear();
+                message.clear();
 
                 nbytes = recv(usuario.sockfd, buffer_token, 1, 0);
 
@@ -58,23 +57,11 @@ namespace odp
                 {
                 case odp::CommandType::AskList:
                 {
-                    // primero leemos el header
-                    nbytes = recv(curr_user.sockfd, buffer_header, sizem, 0);
-                    buffer_header[nbytes] = '\0';
-                    message = buffer_header;
-
-                    sizem = atoi(message) * 2; //6
-
-                    nbytes = recv(curr_user.sockfd, buffer_header, size, 0);
-                    message = buffer_header; //110503
-
-                    sizem = ServerParser.getContentSize(message); //18 porque 11+05+03
-
-                    nbytes = recv(curr_user.sockfd, buffer_content, size, 0);
-                    message = buffer_content; //juliosantiestabanlui...
-
-                    data = ServerParser.getContentInTokens(message);
-
+                    // agregamos a data todos los nombres de los usuarios
+                    for(auto &User : ActiveUsers){
+                        data.push_back(User.first);    
+                    }
+                    
                     message = odp::ConstructorMessage::buildMessage(data, 'I', odp::SenderType::User);
 
                     write(curr_user.sockfd, message.c_str(), message.size());
@@ -82,18 +69,8 @@ namespace odp
                 }
                 case odp::CommandType::UserMessage:
                 {
-                    //ejemplo
-
-                    //OE PERO NO EXISTE DESYINATARIO EN EL SERVIDOR A USUARIO
-                    /*
-                    char accion;//M
-                    char tamaño_msg[3];
-                    char tamaño_remitente[2];
-                    char * msg;
-                    char * remitente;
-                    */   
-                   // julio envía un "hola" a pancho
-                   // protocolo: m00405holapancho
+                    // julio envía un "hola" a pancho
+                    // protocolo: m00405holapancho
                     // leemos el header
                     nbytes = recv(curr_user.sockfd, buffer_header, sizem, 0);
                     buffer_header[nbytes] = '\0';
@@ -107,26 +84,23 @@ namespace odp
 
                     std::string destinatario = data[1]; //obtener el destinatario B
 
-                    // enviamos esto a pancho: M00405holajulio
-                    message = odp::ConstructorMessage::buildMessage(std::vector<std::string>({data[0], username}), 'M', odp::SenderType::User);
-                    // enviamos el mensaje al socketfd del destinatario
-                    write(ActiveUsers[destinatario].sockfd, message.c_str(), message.size());
-
+                    // validamos la existencia del usuario
+                    if(ActiveUsers.find(destinatario) != ActiveUsers.end()){
+                        // el usuario existe
+                        // enviamos esto a pancho: M00405holajulio
+                        message = odp::ConstructorMessage::buildMessage(std::vector<std::string>({data[0], username}), 'M', odp::SenderType::User);
+                        // enviamos el mensaje al socketfd del destinatario
+                        write(ActiveUsers[destinatario].sockfd, message.c_str(), message.size());
+                    }
+                    else{
+                        // el usuario no existe, error
+                        message = odp::ConstructorMessage::buildMessage(std::vector<std::string>({ERROR_USER_NOT_FOUND}), 'E', odp::SenderType::User);
+                        send(curr_user.socketfd, message.c_str(), message.size(), 0);
+                    }  
                     break;
                 }
                 case odp::CommandType::BroadcastMessage:
                 {
-                    /*
-                    [Server ----> user]
-                    {
-                    char accion;//B
-                    char tamaño_msg[3];
-                    char tamaño_remitente[2];
-                    char * msg;
-                    char * remitente;
-                    }
-                    */
-
                     // EJEMPLO [user->server]
                     // b004Hola
                     
@@ -147,24 +121,15 @@ namespace odp
                     // B00405holajulio
                     message = odp::ConstructorMessage::buildMessage(std::vector<std::string>({data[0], username}), 'B', odp::SenderType::User);
                     
+                    // enviamos el mensaje a todos los usuarios, excepto al que lo envió
                     for(auto &User : ActiveUsers){
-                        write(User.second.sockfd, message.c_str(), message.size());
+                        if(User.first != username)
+                            write(User.second.sockfd, message.c_str(), message.size());
                     }
                     break;
                 }
                 case odp::CommandType::UploadFile:
                 {
-                    
-                    //EJEMPLO [user->server]
-                    /*
-                    char accion;/U
-                    char tamaño_file_name[3];
-                    char tamaño_file_data[10];
-                    char tamaño_remitente[2];
-                    char * file_name;
-                    char * file_data;
-                    char * remitente;
-                    }*/
                     // julio envia un file a pancho, el file se llama [hola.txt] y su contenido es "hola_pancho"
                     // ejemplo: u008000000001005hola.txthola_panchopancho
                     
@@ -181,21 +146,24 @@ namespace odp
                     // data = [hola.txt,hola_pancho,pancho]
                     data = ServerParser.getContentInTokens(message);
                     std::string destinatario = data[2];// pancho
-                    // ahora contruimos el message
-                    // U008000000001005hola.txthola_panchojulio
-                    message = odp::ConstructorMessage::buildMessage(std::vector<std::string>({data[0], data[1], username}), 'U', odp::SenderType::User);
                     
-                    write(ActiveUsers[destinatario].sockfd, message.c_str(), message.size());
-                    
+                    // validamos la existencia del usuario
+                    if(ActiveUsers.find(destinatario) != ActiveUsers.end()){
+                        // el usuario existe
+                        // ahora contruimos el message
+                        // U008000000001005hola.txthola_panchojulio
+                        message = odp::ConstructorMessage::buildMessage(std::vector<std::string>({data[0], data[1], username}), 'U', odp::SenderType::User);
+                        send(ActiveUsers[destinatario].sockfd, message.c_str(), message.size(), 0);
+                    }
+                    else{
+                        // el usuario no existe, error
+                        message = odp::ConstructorMessage::buildMessage(std::vector<std::string>({ERROR_USER_NOT_FOUND}), 'E', odp::SenderType::User);
+                        send(curr_user.socketfd, message.c_str(), message.size(), 0);
+                    }                    
                     break;
                 }
                 case odp::CommandType::AcceptFile:
                 {
-                    /*{
-                    char acccion;//F  se rechaso el archivo 
-                    char tamaño_user_name[2]; 
-                    char * user_name;
-                    }*/
                     // singlefile
                     // julio envió un archivo a pancho, pero pancho no lo aceptó, entonces le envía un mensaje de rechazo
                     // ejemplo: f05julio
@@ -217,16 +185,26 @@ namespace odp
                     break;
                 }
                 case odp::CommandType::Exit:
-                {
-                    // julio envía el mensaje de salida al usuario
-                    break;
+		        {
+		            // julio envía el mensaje de salida al usuario
+                    // x 
+                    ActiveUsers.erase(username); // eliminamos al usuario de la estructura
+                    send(curr_user.sockfd, "X", 1, 0);// solo enviamos una X al usuario
+                    close(curr_user.sockfd);
+                    return;            // finalizamos la función
+		            break;
                 }
                 case odp::CommandType::None:
-                    cout << "not known message in protocol" << endl;
-                    break;
+                    message = odp::ConstructorMessage::buildMessage(std::vector<std::string>({ERROR_MESSAGE_NOT_IN_PROTOCOL}), 'E', odp::SenderType::User);
+                    // enviamos un error
+                    send(curr_user.sockfd, message.c_str(), message.size(), 0);
+		            break;
                 }
+                default:
+                    close(curr_user.sockfd);
+                    return;
+                break;
             }
-            close(usuario.sockfd);
         }
 
         // registra un nuevo usuario por medio del nuevo socket aceptado en el servidor
