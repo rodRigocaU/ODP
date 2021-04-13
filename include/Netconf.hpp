@@ -44,19 +44,21 @@ void get_in_information(struct sockaddr_storage *their_addr)
 }
 
 // incluye toda la información de IP y Puerto en nuestra estructura *res
-void setaddressinfo(char* PORT, struct addrinfo*& res){
+void setaddressinfo(char* IPADDR,char* PORT, struct addrinfo*& res, bool is_server = true){
   int status;
   
   struct addrinfo hints;
   memset(&hints, 0, sizeof hints);
   hints.ai_family =  AF_UNSPEC;    // use IPv4 or IPv6, whichever
   hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
-  hints.ai_flags = AI_PASSIVE;     // para que el programa complete mi propio IP
+  if(is_server){
+    hints.ai_flags = AI_PASSIVE;     // para que el programa complete mi propio IP
+  }
 
   // validando la función getaddrinfo
   // llenaremos toda la información relevante en nuestra estructura res, con los datos
   // de nuestro servidor local, p.ej la IP local y el puerto 45000 en este caso
-  if ((status = getaddrinfo(NULL, PORT, &hints, &res)) != 0)
+  if ((status = getaddrinfo(IPADDR, PORT, &hints, &res)) != 0)
     {
       fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
       exit(1);
@@ -64,7 +66,7 @@ void setaddressinfo(char* PORT, struct addrinfo*& res){
 }
 
 // creará el socket principal y lo pondrá a escuchar por conexiones entrantes
-void setmainsock(struct addrinfo *res, int &sockfd, int BACKLOG = 10)
+void setmainsock(struct addrinfo *res, int &sockfd, int BACKLOG = 10, bool is_server = true)
 {
   // make a socket
   // int socket(int domain, int type, int protocol) : (AF_INET, SOCK_STREAM, IPPROTO_TCP)
@@ -84,7 +86,7 @@ void setmainsock(struct addrinfo *res, int &sockfd, int BACKLOG = 10)
   }
 
   
-
+  if(is_server)
   // bind it to the port we passed in to getaddrinfo():
   // int bind(int sockfd, struct sockaddr *my_addr, int addrlen);
   if (-1 == bind(sockfd, res->ai_addr, res->ai_addrlen))

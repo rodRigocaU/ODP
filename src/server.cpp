@@ -17,7 +17,7 @@ int main()
 
   struct addrinfo *res;
 
-  setaddressinfo("50000", res);
+  setaddressinfo(NULL, "50000", res);
 
   int sockfd;
   setmainsock(res, sockfd);
@@ -38,13 +38,8 @@ int main()
     // imprimimos la dirección del nuevo cliente aceptado
     get_in_information(&their_addr);
 
-    std::string newusername = s_handler.registeruser(connectfd); 
-    if (!newusername.empty()) // si el nombre de usuario no es vacío
-    {
-      // soltamos un nuevo thread
-      thread(&odp::ServerHandler::handleuser, &s_handler, newusername).detach();
-    }
+    // soltamos un nuevo thread
+    std::thread(&odp::ServerHandler::handleuser, &s_handler, connectfd).detach();
   }
-  close(sockfd);
   return 0;
 }

@@ -15,7 +15,6 @@ namespace odp
         std::string username;
         std::string password;
         int sockfd;
-        bool exit_chat;
         odp::BufferParser ClientParser;
 
     public:
@@ -24,7 +23,6 @@ namespace odp
             username = _username;
             password = _password;
             sockfd = _sockfd;
-            exit_chat = 0;
         }
 
         void handlerecv()
@@ -38,7 +36,7 @@ namespace odp
             size_t sizem;   // [0, MAXSIZE]
             ssize_t nbytes; // [-1, MAXSIZE]
 
-            while (!exit_chat)
+            while (true)
             {
                 // siempre lo primero que se hace es limpiar el vector que contendrá la data
                 data.clear();
@@ -222,15 +220,13 @@ namespace odp
             std::cout << "Salir del servidor:";
             std::cout << "x";
         }
-        void handlesend(sockfd)
+        void handlesend()
         {
-            std::string token;
-
             // Para Cayro
             help();
             std::string message;
-            size_t n;
-            while (!exit_chat)
+            ssize_t nbytes;
+            while (true)
             {
                 message.clear();
 
@@ -239,8 +235,7 @@ namespace odp
                 if (message == "help")
                     help();
                 else
-                    n = write(sockfd, message.c_str(), message.length());
-                
+                    write(sockfd, message.c_str(), message.length());
             }
         }
     };
