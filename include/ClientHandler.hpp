@@ -14,7 +14,7 @@ namespace odp
         std::string username;
         std::string password;
         int sockfd;
-        odp::BufferParser ClientParser;
+        BufferParser ClientParser;
 
     public:
         ClientHandler(int _sockfd, const std::string& _username, const std::string& _password)
@@ -26,19 +26,22 @@ namespace odp
 
         void handlerecv()
         {
+            
             char buffer_token[1];           // l,i,m,u,x,etc
             char buffer_header[99 * 2 + 2]; // I03110305SantistebanLeePeter -> pasar en string 110305
             char buffer_content[100000];
 
-            std::vector<std::string> data; // el vector donde entrará la data
+            std::vector<std::string> data, send_data; // el vector donde entrará la data
             std::string message;
             std::size_t sizem;   // [0, MAXSIZE]
-            std::ssize_t nbytes; // [-1, MAXSIZE]
+            ssize_t nbytes; // [-1, MAXSIZE]
 
             while (true)
             {
                 // siempre lo primero que se hace es limpiar el vector que contendrá la data
                 data.clear();
+                send_data.clear();
+                message.clear();
                 nbytes = recv(sockfd, buffer_token, 1, 0);
 
                 // el tamaño del header dependiendo del comando
@@ -149,8 +152,9 @@ namespace odp
                     }
                     else
                     {
+                        send_data.push_back(username);
                         // si el archivo fué rechazado, enviamos el mensaje: f05pancho
-                        message = odp::ConstructorMessage::buildMessage({username}, 'f', odp::SenderType::Server);
+                        message = odp::ConstructorMessage::buildMessage(send_data, 'f', odp::SenderType::Server);
                         send(sockfd, message.c_str(), message.size(), 0); // enviamos el mensaje de error
                     }
                     break;
@@ -223,7 +227,7 @@ namespace odp
             // Para Cayro
             help();
             std::string message;
-            std::ssize_t nbytes;
+            ssize_t nbytes;
             while (true)
             {
                 message.clear();

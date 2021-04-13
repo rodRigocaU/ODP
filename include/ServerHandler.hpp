@@ -2,7 +2,6 @@
 #define SERVER_HANDLER_HPP_
 #include <string>
 #include <vector>
-#include "Utils.hpp"
 #include "ParserModule.hpp"
 #include "ConstructorMessage.hpp"
 #include "Netconf.hpp"
@@ -21,7 +20,7 @@ namespace odp
     {
     private:
         std::unordered_map<std::string, User> ActiveUsers; // (username: <sockfd, password>)
-        odp::BufferParser ServerParser;
+        BufferParser ServerParser;
 
     public:
         // en esa función lo que haremos será crear un nuevo thread para un nuevo usuario ya registrado,
@@ -34,15 +33,16 @@ namespace odp
             char buffer_header[99 * 2 + 2]; // I03110305SantistebanLeePeter -> pasar en string 110305
             char buffer_content[100000];
 
-            std::vector<std::string> data; // el vector donde entrará la data
+            std::vector<std::string> data, send_data; // el vector donde entrará la data
             std::string message;
             std::size_t sizem;   // [0, MAXSIZE]
-            std::ssize_t nbytes; // [-1, MAXSIZE]
+            ssize_t nbytes; // [-1, MAXSIZE]
 
             while (true)
             {
                 // siempre al inicio limpiamos el vector y el mensaje, ya que tienen datos de lecturas anteriores
                 data.clear();
+                send_data.clear();
                 message.clear();
 
                 nbytes = recv(sockfd, buffer_token, 1, 0);

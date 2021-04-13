@@ -42,5 +42,3 @@ void ConsoleOutput::print(const std::string& message){
 }
 
 #endif//CONSOLE_OUTPUT_HPP_
-
-=

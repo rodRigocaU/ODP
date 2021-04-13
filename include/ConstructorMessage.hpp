@@ -1,5 +1,6 @@
 #ifndef CONSTRUCTOR_MESSAGE_HPP_
 #define CONSTRUCTOR_MESSAGE_HPP_
+
 #include <cctype>
 #include <iostream>
 #include <string>
@@ -34,7 +35,7 @@ namespace odp
         // agregamos la cantidad de usuarios activos
         buildedMessage += fitDigits(data.size(), 2);
 
-        for (std::size_t elem : data)
+        for (auto elem : data)
         {
           buildedMessage += fitDigits(elem.length(), settings.second[1]);
         }

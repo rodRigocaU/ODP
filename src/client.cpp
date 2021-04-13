@@ -1,6 +1,4 @@
 /* Client code in C++ */
-#include "ParserModule.hpp"
-#include "Netconf.hpp"
 #include "ClientHandler.hpp"
 
 #include <thread>
@@ -28,7 +26,7 @@ int main()
 
   std::string answer = "";
 
-  std::string username, password;
+  std::vector<std::string> send_data(2); // send_data = [username, password]
 
   while (answer != "Lok")
   {
@@ -36,11 +34,11 @@ int main()
     std::cout << "Ingrese Nombre de usuario y password:" << std::endl;
 
     std::cout << "Username:";
-    std::getline(cin, username);
+    std::getline(cin, send_data[0]);
     std::cout << "Password:";
-    std::getline(cin, password);
+    std::getline(cin, send_data[1]);
 
-    std::string message = odp::ConstructorMessage::buildMessage({username, password}, 'l', odp::SenderType::Server);
+    std::string message = odp::ConstructorMessage::buildMessage(send_data, 'l', odp::SenderType::Server);
 
     write(sockfd, message.c_str(), message.length());
 
@@ -49,7 +47,7 @@ int main()
     answer = buffer;
   }
 
-  odp::ClientHandler c_handler(sockfd, username, password);
+  odp::ClientHandler c_handler(sockfd, send_data[0], send_data[1]);
   
   // Escuchar al servidor
   std::thread(&odp::ClientHandler::handlerecv, &c_handler).detach();
