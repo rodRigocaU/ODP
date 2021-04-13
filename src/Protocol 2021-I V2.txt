@@ -1,4 +1,4 @@
-l	         Login
+    l	         Login
 [user ---> Server]
 {
 char  accion; //l 

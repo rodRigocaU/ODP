@@ -59,7 +59,7 @@ namespace odp
                 {
                     // agregamos a data todos los nombres de los usuarios
                     for(auto &User : ActiveUsers){
-                        data.push_back(User.first);    
+                        data.push_back(User.first);
                     }
                     
                     message = odp::ConstructorMessage::buildMessage(data, 'I', odp::SenderType::User);
