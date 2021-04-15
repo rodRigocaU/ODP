@@ -68,7 +68,7 @@ std::size_t BufferParser::getContentSize(const std::string& headerString){
 std::vector<std::string> BufferParser::getContentInTokens(const std::string& contentString){
   std::vector<std::string> parsedMessage;
   std::size_t currentPosition = 0;
-  while(bytes_to_read.empty()){
+  while(!bytes_to_read.empty()){
     parsedMessage.push_back(contentString.substr(currentPosition, bytes_to_read.front()));
     clog::ConsoleOutput::print("[BufferParser <EXTRACTED TOKEN>]: " + parsedMessage.back());
     currentPosition += bytes_to_read.front();

@@ -2,8 +2,8 @@
 #define SERVER_HANDLER_HPP_
 #include <string>
 #include <vector>
-#include "ParserModule.hpp"
-#include "ConstructorMessage.hpp"
+#include "../ParserModule.hpp"
+#include "../ParserModule/ConstructorMessage.hpp"
 #include "Netconf.hpp"
 
 using namespace std;
@@ -64,7 +64,6 @@ namespace odp
                 case odp::CommandType::Login:
                 {
                     // user -> l0402luisll
-                    std::cout << "login\n";
 
                     // Leer el header
                     nbytes = recv(sockfd, buffer_header, sizem, 0);
@@ -81,7 +80,7 @@ namespace odp
                     // luisll
                     // std::cout <<message<<"\n";
 
-                    std::cout << "Error" << "\n";
+                    
                     // newuserdata = [<username>, <password>]
                     data = ServerParser.getContentInTokens(message);
 

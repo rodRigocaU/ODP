@@ -1,8 +1,8 @@
 #ifndef CLIENT_HANDLER_HPP_
 #define CLIENT_HANDLER_HPP_
 
-#include "ParserModule.hpp"
-#include "ConstructorMessage.hpp"
+#include "../ParserModule.hpp"
+#include "../ParserModule/ConstructorMessage.hpp"
 #include "Netconf.hpp"
 #include <fstream>
 

@@ -16,6 +16,8 @@
 // C++
 #include <iostream>
 
+#include "../NetSettings/Settings.hpp"
+
 
 void get_in_information(struct sockaddr_storage *their_addr)
 {
