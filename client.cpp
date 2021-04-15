@@ -1,4 +1,5 @@
 /* Client code in C++ */
+//g++ -std=c++11 -pthread -o cliente.exe cliente.cpp 
 #include "ClientHandler.hpp"
 
 #include <thread>

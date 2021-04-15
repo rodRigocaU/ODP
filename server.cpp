@@ -4,6 +4,7 @@
 
 #include <thread>
 #include <iostream>
+//g++ -std=c++11 -pthread -o server.exe server.cpp 
 
 int main()
 {
