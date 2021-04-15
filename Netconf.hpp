@@ -44,7 +44,7 @@ void get_in_information(struct sockaddr_storage *their_addr)
 }
 
 // incluye toda la información de IP y Puerto en nuestra estructura *res
-void setaddressinfo(char* IPADDR,char* PORT, struct addrinfo*& res, bool is_server = true){
+void setaddressinfo(char* IPADDR, char* PORT, struct addrinfo*& res, bool is_server = true){
   int status;
   
   struct addrinfo hints;
@@ -86,35 +86,49 @@ void setmainsock(struct addrinfo *res, int &sockfd, int BACKLOG = 10, bool is_se
   }
 
   
-  if(is_server)
-  // bind it to the port we passed in to getaddrinfo():
-  // int bind(int sockfd, struct sockaddr *my_addr, int addrlen);
-  if (-1 == bind(sockfd, res->ai_addr, res->ai_addrlen))
-    {
-      perror("error bind failed");
-      close(sockfd);
-      exit(EXIT_FAILURE);
-    }
+  if(is_server){
+    // bind it to the port we passed in to getaddrinfo():
+    // int bind(int sockfd, struct sockaddr *my_addr, int addrlen);
+    if (-1 == bind(sockfd, res->ai_addr, res->ai_addrlen))
+      {
+        perror("error bind failed");
+        close(sockfd);
+        exit(EXIT_FAILURE);
+      }
+
+    // imprimiremos el IP actual de nuestro servidor
+    char ipaddr[INET_ADDRSTRLEN];
+    struct sockaddr_in *sa = (struct sockaddr_in *)&res->ai_addr;
+    inet_ntop(AF_INET, &(sa->sin_addr), ipaddr, INET_ADDRSTRLEN);
+    std::cout << "Dirección IP del servidor: " << ipaddr << std::endl;
+
+
+    // hasta aquí hemos usado la variable res, así que liberamos la memoria de esta lista
+    freeaddrinfo(res);
+
+    // listen acepta el socket principal del servidor
+    // y el BACKLOG que representa la cantidad de usuarios que se permitirán en la
+    // conexión total
+    if (-1 == listen(sockfd, BACKLOG))
+      {
+        perror("error listen failed");
+        close(sockfd);
+        exit(EXIT_FAILURE);
+      }
+  }
+  else{
+
+    if (connect(sockfd, res->ai_addr, res->ai_addrlen) == -1)
+      {
+        perror("connect failed");
+        close(sockfd);
+        exit(EXIT_FAILURE);
+      }
   
-  // imprimiremos el IP actual de nuestro servidor
-  char ipaddr[INET_ADDRSTRLEN];
-  struct sockaddr_in *sa = (struct sockaddr_in *)&res->ai_addr;
-  inet_ntop(AF_INET, &(sa->sin_addr), ipaddr, INET_ADDRSTRLEN);
-  std::cout << "Dirección IP del servidor: " << ipaddr << std::endl;
+    // hasta aquí hemos usado la variable res, así que liberamos la memoria de esta lista
+    freeaddrinfo(res);
+  }
 
-
-  // hasta aquí hemos usado la variable res, así que liberamos la memoria de esta lista
-  freeaddrinfo(res);
-
-  // listen acepta el socket principal del servidor
-  // y el BACKLOG que representa la cantidad de usuarios que se permitirán en la
-  // conexión total
-  if (-1 == listen(sockfd, BACKLOG))
-    {
-      perror("error listen failed");
-      close(sockfd);
-      exit(EXIT_FAILURE);
-    }
 }
 
 
