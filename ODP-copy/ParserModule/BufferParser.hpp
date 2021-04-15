@@ -33,6 +33,7 @@ std::size_t BufferParser::getHeaderSize(SenderType senderType, const char& comma
   for(std::vector<uint8_t>::iterator::reference nDigit : settings.second){
     sumOfBytes += static_cast<std::size_t>(nDigit);
   }
+  clog::ConsoleOutput::print("[BufferParser <HEADER SIZE>]: Done");
   return ((settings.first == CommandType::AskList)?settings.second[0]:sumOfBytes);
 }
 
@@ -62,13 +63,15 @@ std::size_t BufferParser::getContentSize(const std::string& headerString){
       beginOfRawData = counter;
     }
   }
+
   return sumOfBytes;
 }
 
 std::vector<std::string> BufferParser::getContentInTokens(const std::string& contentString){
   std::vector<std::string> parsedMessage;
   std::size_t currentPosition = 0;
-  while(bytes_to_read.empty()){
+  clog::ConsoleOutput::print("[BufferParser <TO TOKENIZE>]: " + contentString);
+  while(!bytes_to_read.empty()){
     parsedMessage.push_back(contentString.substr(currentPosition, bytes_to_read.front()));
     clog::ConsoleOutput::print("[BufferParser <EXTRACTED TOKEN>]: " + parsedMessage.back());
     currentPosition += bytes_to_read.front();
