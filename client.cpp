@@ -1,5 +1,5 @@
 /* Client code in C++ */
-//g++ -std=c++11 -pthread -o cliente.exe cliente.cpp 
+// g++ -std=c++11 -o server.exe server.cpp
 #include "ClientHandler.hpp"
 
 #include <thread>
@@ -36,7 +36,6 @@ int main()
     std::cout << "Username:";
     std::getline(cin, send_data[0]);
     std::cout << "Password:";
-    //getchar();
     std::getline(cin, send_data[1]);
     std::string message = odp::ConstructorMessage::buildMessage(send_data, 'l', odp::SenderType::User);
     std::cout << message << "\n";
