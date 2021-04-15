@@ -17,6 +17,8 @@ private:
   std::pair<CommandType, std::vector<uint8_t>> settings;
   
 public:
+  std::pair<CommandType, std::vector<uint8_t>>& getCommnadSettings();
+  void setCommandSettings(SenderType senderType, const char& command);
   std::size_t getHeaderSize(SenderType senderType, const char& command);
   std::size_t getContentSize(const std::string& headerString);
   std::vector<std::string> getContentInTokens(const std::string& contentString);
@@ -27,8 +29,16 @@ public:
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-std::size_t BufferParser::getHeaderSize(SenderType senderType, const char& command){
+std::pair<CommandType, std::vector<uint8_t>>& BufferParser::getCommnadSettings(){
+  return settings;
+}
+
+void BufferParser::setCommandSettings(SenderType senderType, const char& command){
   settings = CommandSettings::getSettings(std::tolower(command), senderType);
+}
+
+std::size_t BufferParser::getHeaderSize(SenderType senderType, const char& command){
+  setCommandSettings(senderType, command);
   std::size_t sumOfBytes = 0;
   for(std::vector<uint8_t>::iterator::reference nDigit : settings.second){
     sumOfBytes += static_cast<std::size_t>(nDigit);
