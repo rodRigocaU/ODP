@@ -74,6 +74,7 @@ std::vector<std::string> BufferParser::getContentInTokens(const std::string& con
     currentPosition += bytes_to_read.front();
     bytes_to_read.pop();
   }
+  clog::ConsoleOutput::print("Done");
   return parsedMessage;
 }
 

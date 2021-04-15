@@ -1,6 +1,12 @@
 #ifndef CLIENT_HANDLER_HPP_
 #define CLIENT_HANDLER_HPP_
 
+#define NC "\e[0m"
+#define RED "\e[0;31m"
+#define GRN "\e[0;32m"
+#define CYN "\e[0;36m"
+#define REDB "\e[41m"
+
 #include "../ParserModule.hpp"
 #include "../ParserModule/ConstructorMessage.hpp"
 #include "Netconf.hpp"
@@ -17,7 +23,7 @@ namespace odp
         BufferParser ClientParser;
 
     public:
-        ClientHandler(int _sockfd, const std::string& _username, const std::string& _password)
+        ClientHandler(int _sockfd, const std::string &_username, const std::string &_password)
         {
             username = _username;
             password = _password;
@@ -26,15 +32,15 @@ namespace odp
 
         void handlerecv()
         {
-            
-            char buffer_token[1];           // l,i,m,u,x,etc
+
+            char buffer_token[2];           // l,i,m,u,x,etc
             char buffer_header[99 * 2 + 2]; // I03110305SantistebanLeePeter -> pasar en string 110305
             char buffer_content[100000];
 
             std::vector<std::string> data, send_data; // el vector donde entrará la data
             std::string message;
-            std::size_t sizem;   // [0, MAXSIZE]
-            ssize_t nbytes; // [-1, MAXSIZE]
+            std::size_t sizem; // [0, MAXSIZE]
+            ssize_t nbytes;    // [-1, MAXSIZE]
 
             while (true)
             {
@@ -44,24 +50,53 @@ namespace odp
                 message.clear();
                 nbytes = recv(sockfd, buffer_token, 1, 0);
 
+                buffer_token[1] = '\0';
+                //--------------------------------
+                std::cout << "Bytes leidos desde el cliente: " << nbytes << '\n';
+                std::cout << "Bytes leidos desde el cliente: " << nbytes << '\n';
+                std::cout << "Token: " << buffer_token << '\n';
+                //-----------------------------------------------------------
+
                 // el tamaño del header dependiendo del comando
                 sizem = ClientParser.getHeaderSize(odp::SenderType::Server, buffer_token[0]);
+
+                //-------------------------------------------------------------
+                std::cout << "Size del header: " << sizem << '\n';
+                //-------------------------------------------------------------
 
                 switch (ClientParser.getCommandType())
                 {
                 case odp::CommandType::AskList:
                 {
+                    clog::ConsoleOutput::print("Entramos AskList ");
                     // supongamos que nos llega el mensaje: I03110305SantistebanLeePeter
                     // primero leemos el header
                     nbytes = recv(sockfd, buffer_header, sizem, 0);
                     buffer_header[nbytes] = '\0';
-                    message = buffer_header;
 
+                    clog::ConsoleOutput::print("Segunda lectura");
+                    clog::ConsoleOutput::print(buffer_header);
+
+                    message = buffer_header;
+                    //-------------------------------------------
+                    std::cout << message << std::endl;
+                    //--------------------------------------------
+
+                    // stringstream ss;
+                    // ss << message;
+                    // ss >> sizem;
+                    //Esta bien cagada
                     sizem = std::stoi(message) * 2; //6
+                    std::cout << sizem << std::endl;
 
                     nbytes = recv(sockfd, buffer_header, sizem, 0);
-                    message = buffer_header; //110503
+                    message = message + buffer_header; //110503
 
+                    // clog::ConsoleOutput::print("Mensaje: ");
+                    // clog::ConsoleOutput::print(buffer_header);
+                    std::cout << message << std::endl;
+
+                    //Enviar concatenado 0104... no body
                     sizem = ClientParser.getContentSize(message); //18 = 11+05+03
 
                     nbytes = recv(sockfd, buffer_content, sizem, 0);
@@ -183,7 +218,7 @@ namespace odp
                 {
                     // el server aceptó tu retiro del chat, X
                     close(sockfd); // cerramos nuestro socket
-                    exit(1); // finalizamos todo el programa
+                    exit(1);       // finalizamos todo el programa
                     break;
                 }
                 case odp::CommandType::Error:
@@ -199,31 +234,39 @@ namespace odp
 
         void help()
         {
+
             std::cout << "Comandos de Ayuda:";
+            std::cout << '\n';
 
-            std::cout << "Login:";
-            std::cout << "lxxyynamepassword";
+            std::cout << CYN "Login:"
+                      << " ";
+            std::cout << CYN "l -> lnamepassword" << '\n';
 
-            std::cout << "Lista de usuarios:";
-            std::cout << "i";
+            std::cout << CYN "Lista de usuarios:"
+                      << " ";
+            std::cout << CYN "i" << '\n';
 
-            std::cout << "Mensaje a usurio en concreto:";
-            std::cout << "mxxxyymensajedestinatario";
+            std::cout << CYN "Mensaje a usuario en concreto:"
+                      << " ";
+            std::cout << CYN "m -> mMensajedestinatario" << '\n';
 
-            std::cout << "Mensaje a todos los usuarios:";
-            std::cout << "bxxxmensajebroadcast";
+            std::cout << CYN "Mensaje a todos los usuarios:"
+                      << " ";
+            std::cout << CYN "b -> bmensajebroadcast" << '\n';
 
-            std::cout << "Subir un archivo al servidor:";
-            std::cout << "uxxxyyyyyyyyyzznombredelarchivoarchivodestinatario";
+            std::cout << CYN "Subir un archivo al servidor:"
+                      << " ";
+            std::cout << CYN "u -> unombredelarchivoarchivodestinatario" << '\n';
 
-            std::cout << "Aceptacion del archivo:";
-            std::cout << "fxxremitente";
+            std::cout << CYN "Aceptacion del archivo:"
+                      << " ";
+            std::cout << CYN "f -> fremitente" << '\n';
 
-            std::cout << "Salir del servidor:";
-            std::cout << "x";
+            std::cout << RED "Salir del servidor:"
+                      << " ";
+            std::cout << RED "x" NC << '\n';
         }
-        
-        
+
         void handlesend()
         {
 
@@ -239,7 +282,14 @@ namespace odp
                 if (message == "help")
                     help();
                 else
-                    write(sockfd, message.c_str(), message.length());
+                {
+                    //Hacer que pida el comando luego respectivamente que pida los cuertpos de los mensajes no pedira el tamaño la funcio nde italo nos dara el mensaje concatenado y listo
+
+                    int n = write(sockfd, message.c_str(), message.length());
+
+                    // clog::ConsoleOutput::print("Bytes enviados:");
+                    // std::cout << n << std::endl;
+                }
             }
         }
     };

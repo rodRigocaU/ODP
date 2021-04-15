@@ -1,7 +1,8 @@
 #ifndef SETTINGS_HPP_
 #define SETTINGS_HPP_
 
-char CPORT[]     =  "50001";
+// char CPORT[]     =  "50001";
+char CPORT[]     =  "4500";
 char CIPSERVER[] =  "127.0.0.1";
 
 

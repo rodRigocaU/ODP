@@ -32,6 +32,7 @@ namespace odp
 
       if(settings.first == CommandType::AskList && senderType == SenderType::Server)
       {
+       
         // agregamos la cantidad de usuarios activos
         buildedMessage += fitDigits(data.size(), 2);
 
@@ -42,15 +43,25 @@ namespace odp
       }
       else
       {
+        std::cout<< data[1] <<std::endl;
+
+        //servidor chiste 
         std::size_t idx = 0;
-        for (uint8_t &nDigits : settings.second)
-          buildedMessage += fitDigits(data[idx++].length(), nDigits);
-        
+        for (uint8_t &nDigits : settings.second){
+            // std::cout<< buildedMessage <<std::endl; //M -> M004 -> 
+            std::cout<< data[idx].length() <<std::endl; 
+            buildedMessage += fitDigits(data[idx++].length(), nDigits);
+        }
+          
+          
       }
+      clog::ConsoleOutput::print("Done Else For");
 
       // agregamos el contenido del mensaje
       for (const std::string &elem : data)
         buildedMessage += elem;
+      
+      clog::ConsoleOutput::print("Done For");
       
 
       return buildedMessage;
