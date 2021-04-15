@@ -2,6 +2,7 @@
 // g++ -std=c++11 -o server.exe server.cpp
 #include "Handlers/ClientHandler.hpp"
 #include "Handlers/Netconf.hpp"
+#include "Tools/HiddenPassword.hpp"
 
 #include <thread>
 #include <iostream>
@@ -11,6 +12,7 @@ using namespace std;
 
 int main()
 {
+  clog::ConsoleOutput::enableOutput(0);
   struct addrinfo *res;
 
   setaddressinfo(CIPSERVER, CPORT, res, false);
@@ -34,7 +36,7 @@ int main()
     std::cout << "Username:";
     std::getline(cin, send_data[0]);
     std::cout << "Password:";
-    std::getline(cin, send_data[1]);
+    odp::getPassword(send_data[1]);
     std::string message = odp::ConstructorMessage::buildMessage(send_data, 'l', odp::SenderType::User);
     std::cout << message << "\n";
     write(sockfd, message.c_str(), message.length());
