@@ -36,8 +36,8 @@ namespace odp
 
             std::vector<std::string> data, send_data; // el vector donde entrará la data
             std::string message;
-            std::size_t sizem;   // [0, MAXSIZE]
-            ssize_t nbytes; // [-1, MAXSIZE]
+            std::size_t sizem; // [0, MAXSIZE]
+            ssize_t nbytes;    // [-1, MAXSIZE]
 
             while (true)
             {
@@ -63,10 +63,14 @@ namespace odp
                 {
                 case odp::CommandType::Login:
                 {
+                    // user -> l0402luisll
                     std::cout << "login\n";
+
                     // Leer el header
                     nbytes = recv(sockfd, buffer_header, sizem, 0);
                     message = buffer_header;
+                    //0402
+                    // std::cout <<message<<"\n";
 
                     // leer cuerpo del mensaje
                     sizem = ServerParser.getContentSize(message);
@@ -74,8 +78,14 @@ namespace odp
                     buffer_content[nbytes] = '\0';
                     message = buffer_content;
 
+                    // luisll
+                    // std::cout <<message<<"\n";
+
+                    std::cout << "Error" << "\n";
                     // newuserdata = [<username>, <password>]
                     data = ServerParser.getContentInTokens(message);
+
+                    std::cout << data[0] << "\n";
 
                     /* aquí podría iniciarse la función registrar()*/
                     /* si el usuario no está registrado lo registramos */
@@ -254,8 +264,8 @@ namespace odp
                     break;
                 }
                 default:
-                close(curr_user.sockfd);
-                return;
+                    close(curr_user.sockfd);
+                    return;
                 }
             }
         }

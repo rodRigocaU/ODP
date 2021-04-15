@@ -222,9 +222,11 @@ namespace odp
             std::cout << "Salir del servidor:";
             std::cout << "x";
         }
+        
+        
         void handlesend()
         {
-            // Para Cayro
+
             help();
             std::string message;
             ssize_t nbytes;
