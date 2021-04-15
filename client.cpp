@@ -36,6 +36,7 @@ int main()
     std::cout << "Username:";
     std::getline(cin, send_data[0]);
     std::cout << "Password:";
+    //getchar();
     std::getline(cin, send_data[1]);
     std::string message = odp::ConstructorMessage::buildMessage(send_data, 'l', odp::SenderType::User);
     std::cout << message << "\n";
