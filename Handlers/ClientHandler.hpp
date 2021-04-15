@@ -267,6 +267,65 @@ namespace odp
             std::cout << RED "x" NC << '\n';
         }
 
+        void send_message(std::string str_token)
+        {
+            std::cout<<"Token String:"<<str_token<<std::endl;
+            char token[2];
+            
+            strcpy(token, str_token.c_str());
+            token[1] = '\0';    
+            
+            std::cout<<"Token :"<<token<<std::endl;
+            //Error------------------------------------
+            ClientParser.setCommandSettings(odp::SenderType::User, token[0]);
+            // std::cout<<"Token :"<<token<<std::endl;
+            //------------------------------------
+
+            switch (ClientParser.getCommandType())
+            {
+            case odp::CommandType::AskList:{
+                std::cout<<"Se le mostrara la lista de usuarios registrados:"<<std::endl;
+                int n = write(sockfd, token, 1);
+                
+                break; //optional
+            }
+            case odp::CommandType::UserMessage:{
+                std::cout<<"Ingrese el mensaje para el usuario"<<std::endl;
+                std::string mensaje;
+                // std::cout<<"Mensaje: ";
+                std::getline(std::cin, mensaje);
+                std::string destino;
+                // std::cout << "Destino: ";
+                std::getline(std::cin, destino);
+
+
+
+
+                break; //optional
+            }
+            case odp::CommandType::BroadcastMessage:{
+                break;
+            }
+            
+             case odp::CommandType::UploadFile:{
+                break;
+             }
+
+             case odp::CommandType::AcceptFile:{
+                break;
+             }
+                
+             case odp::CommandType::Exit:{
+                break;
+             }
+
+            case odp::CommandType::Error:{
+                break;
+            }
+            
+            }
+        }
+
         void handlesend()
         {
 
@@ -285,7 +344,13 @@ namespace odp
                 {
                     //Hacer que pida el comando luego respectivamente que pida los cuertpos de los mensajes no pedira el tamaño la funcio nde italo nos dara el mensaje concatenado y listo
 
-                    int n = write(sockfd, message.c_str(), message.length());
+                    if (message.length()>2)
+                        std::cout<<"No es un comando valido"<<std::endl;
+                    
+                    else
+                        send_message(message);
+
+                    // int n = write(sockfd, message.c_str(), message.length());
 
                     // clog::ConsoleOutput::print("Bytes enviados:");
                     // std::cout << n << std::endl;
