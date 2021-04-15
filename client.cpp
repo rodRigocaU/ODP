@@ -1,6 +1,7 @@
 /* Client code in C++ */
 // g++ -std=c++11 -o server.exe server.cpp
-#include "ClientHandler.hpp"
+#include "Handlers/ClientHandler.hpp"
+#include "Handlers/Netconf.hpp"
 
 #include <thread>
 #include <iostream>
@@ -8,14 +9,11 @@
 
 using namespace std;
 
-#define IPSERVER "127.0.0.1" // el IP del servidor, por ahora localhost
-#define PORT "50000"         // el puerto en el que escucha el servidor
-
 int main()
 {
   struct addrinfo *res;
 
-  setaddressinfo(IPSERVER, PORT, res, false);
+  setaddressinfo(CIPSERVER, CPORT, res, false);
 
   // ahora creamos el socket de conexión
   int sockfd;

@@ -6,7 +6,7 @@
 #include <string>
 #include <cmath>
 #include <vector>
-#include "ParserModule/CommandSettings.hpp"
+#include "CommandSettings.hpp"
 
 // using namespace std;
 

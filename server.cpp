@@ -1,6 +1,5 @@
 #include "ParserModule.hpp"
-#include "Netconf.hpp"
-#include "ServerHandler.hpp"
+#include "Handlers/ServerHandler.hpp"
 
 #include <thread>
 #include <iostream>
@@ -13,7 +12,7 @@ int main()
 
   struct addrinfo *res;
 
-  setaddressinfo(NULL, "50000", res, true);
+  setaddressinfo(NULL, CPORT, res, true);
 
   int sockfd;
   setmainsock(res, sockfd);
