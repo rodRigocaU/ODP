@@ -30,7 +30,7 @@ namespace odp
       // Agregar tokens
       buildedMessage.push_back(command);
 
-      if (settings.first == CommandType::AskList)
+      if(settings.first == CommandType::AskList && senderType == SenderType::Server)
       {
         // agregamos la cantidad de usuarios activos
         buildedMessage += fitDigits(data.size(), 2);
