@@ -375,10 +375,10 @@ namespace odp
 
             case odp::CommandType::Error:
             {
-                n = read(sockfd, buffer_content, 20); // todos los errores son de tamaño 20
-                buffer_content[n] = '\0';
-                std::cout << "\nNuevo error: " << buffer_content << "\n";            
-                break;
+                // n = read(sockfd, buffer_content, 20); // todos los errores son de tamaño 20
+                // buffer_content[n] = '\0';
+                // std::cout << "\nNuevo error: " << buffer_content << "\n";            
+                // break;
             }
             }
         }
