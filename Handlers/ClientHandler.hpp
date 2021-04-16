@@ -1,12 +1,6 @@
 #ifndef CLIENT_HANDLER_HPP_
 #define CLIENT_HANDLER_HPP_
 
-#define NC "\e[0m"
-#define RED "\e[0;31m"
-#define GRN "\e[0;32m"
-#define CYN "\e[0;36m"
-#define REDB "\e[41m"
-
 #include "../ParserModule.hpp"
 #include "../ParserModule/ConstructorMessage.hpp"
 #include "Netconf.hpp"
@@ -52,16 +46,16 @@ namespace odp
 
                 buffer_token[1] = '\0';
                 //--------------------------------
-                std::cout << "Bytes leidos desde el cliente: " << nbytes << '\n';
-                std::cout << "Bytes leidos desde el cliente: " << nbytes << '\n';
-                std::cout << "Token: " << buffer_token << '\n';
+                //std::cout << "Bytes leidos desde el cliente: " << nbytes << '\n';
+                //std::cout << "Bytes leidos desde el cliente: " << nbytes << '\n';
+                //std::cout << "Token: " << buffer_token << '\n';
                 //-----------------------------------------------------------
 
                 // el tamaño del header dependiendo del comando
                 sizem = ClientParser.getHeaderSize(odp::SenderType::Server, buffer_token[0]);
 
                 //-------------------------------------------------------------
-                std::cout << "Size del header: " << sizem << '\n';
+                //std::cout << "Size del header: " << sizem << '\n';
                 //-------------------------------------------------------------
 
                 switch (ClientParser.getCommandType())
@@ -267,6 +261,128 @@ namespace odp
             std::cout << RED "x" NC << '\n';
         }
 
+        void send_message(std::string str_token)
+        {
+            char token[2];
+            std::vector<std::string> data;
+            strcpy(token, str_token.c_str());
+            token[1] = '\0';
+
+            std::cout << "Token :" << token << std::endl;
+            //Error------------------------------------
+            ClientParser.setCommandSettings(odp::SenderType::User, token[0]);
+            // std::cout<<"Token :"<<token<<std::endl;
+            //------------------------------------
+
+            switch (ClientParser.getCommandType())
+            {
+            case odp::CommandType::AskList:
+            {
+                std::cout << "Se le mostrara la lista de usuarios registrados:" << std::endl;
+                int n = write(sockfd, token, 1);
+
+                break; //optional
+            }
+            case odp::CommandType::UserMessage:
+            {
+                std::cout << "Ingrese el mensaje para el usuario" << std::endl;
+                std::string mensaje;
+                std::cout << "Mensaje: ";
+                std::getline(std::cin, mensaje);
+                std::string destino;
+                std::cout << "Destino: ";
+                std::getline(std::cin, destino);
+
+                std::vector<std::string> data;
+                data.push_back(mensaje);
+                data.push_back(destino);
+
+                std::string message = odp::ConstructorMessage::buildMessage(data, 'm', odp::SenderType::User);
+
+                std::cout << "Mensaje Listo:" << message << std::endl;
+                
+                int n = write(sockfd, message.c_str(), message.length());
+
+                break; //optional
+            }
+            case odp::CommandType::BroadcastMessage:
+            {
+
+                std::cout << "Ingrese el mensaje: " << '\n';
+                std::string mensaje;
+                std::cout << "Mensaje: ";
+                std::getline(std::cin, mensaje);
+
+                std::vector<std::string> data;
+                data.push_back(mensaje);
+                
+                std::string message = odp::ConstructorMessage::buildMessage(data, 'b', odp::SenderType::User);
+
+                std::cout << "Mensaje Listo:" << message << std::endl;
+                
+                int n = write(sockfd, message.c_str(), message.length());
+                std::cout<<"Los bytes son:"<<n<<std::endl;
+
+                break;
+            }
+
+            case odp::CommandType::UploadFile:
+            {
+                // u
+                // carpinchoA.jpg
+                // okidoki (si existe u otro usuario)
+                std::ifstream File_Reader;
+                data.resize(3);
+                std::cout << "[ODP]>> Nombre del archivo:";
+                std::getline(std::cin, data[0]);
+                
+                File_Reader.open(data[0]);
+                std::string line;
+                while(File_Reader.is_open() && File_Reader>>line){
+                    line += '\n'; // se le agrega el salto de línea del archivo, porque >> no lo hace
+                    data[1] += line;
+                }
+                File_Reader.close();
+                
+                std::cout << "[ODP]>> Nombre del destinatario:";
+                std::getline(std::cin, data[2]);
+                std::string package = odp::ConstructorMessage::buildMessage(data, 'u', odp::SenderType::User);
+
+                write(sockfd, package.c_str(), package.length());
+                break;
+            }
+
+            case odp::CommandType::AcceptFile:
+            {
+                data.resize(1);
+                std::cout << "[ODP]>> Aceptas el mensaje?[y/n]: ";
+                char choose = getchar();
+                if(choose == 'y'){
+                    std::getline(std::cin,data[0]);
+                    std::string package = odp::ConstructorMessage::buildMessage(data, 'a', odp::SenderType::User);
+                    write(sockfd, package.c_str(), package.length());
+                }
+                break;
+            }
+
+            case odp::CommandType::Exit:
+            {
+                std::cout << "[ODP]>> Saliendo del sistema usuario [" << username << "]..." << '\n';
+                close(sockfd);
+                exit(0);
+                break;
+            }
+
+            case odp::CommandType::Error:
+            {
+                n = read(sockfd, buffer_content, 20); // todos los errores son de tamaño 20
+                buffer_content[n] = '\0';
+                std::cout << "\nNuevo error: " << buffer_content << "\n";            
+                break;
+            }
+            }
+        }
+
         void handlesend()
         {
 
@@ -276,7 +392,7 @@ namespace odp
             while (true)
             {
                 message.clear();
-
+                std::cout << "[ODP]: Estoy esperando un comando...\n";
                 std::getline(std::cin, message);
 
                 if (message == "help")
@@ -285,7 +401,13 @@ namespace odp
                 {
                     //Hacer que pida el comando luego respectivamente que pida los cuertpos de los mensajes no pedira el tamaño la funcio nde italo nos dara el mensaje concatenado y listo
 
-                    int n = write(sockfd, message.c_str(), message.length());
+                    if (message.length() > 2)
+                        std::cout << "No es un comando valido" << std::endl;
+
+                    else
+                        send_message(message);
+
+                    // int n = write(sockfd, message.c_str(), message.length());
 
                     // clog::ConsoleOutput::print("Bytes enviados:");
                     // std::cout << n << std::endl;

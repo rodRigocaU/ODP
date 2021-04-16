@@ -15,6 +15,7 @@ private:
   std::unordered_map<char, Settings> user2server;
   std::unordered_map<char, Settings> server2user;
 
+
   CommandSettings();
 public:
   static CommandSettings& getGlobalCommandSettings();

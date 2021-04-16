@@ -21,7 +21,6 @@ namespace odp
     class ServerHandler
     {
     private:
-        std::string username;
         std::unordered_map<std::string, ActiveUser> ActiveUsers; // (username: <sockfd, password>)
         BufferParser ServerParser;
 
@@ -30,6 +29,7 @@ namespace odp
         //y escucharemos todas sus peticiones
         void handleuser(int sockfd)
         {
+            std::string username; // el nombre usuario que será aceptado
             ActiveUser curr_user; // current user
 
             char buffer_token[2];           // l,i,m,u,x,etc
@@ -104,9 +104,10 @@ namespace odp
                     if (ActiveUsers.find(data[0]) == ActiveUsers.end())
                     {
                         clog::ConsoleOutput::print("GaIF");
+                        username = data[0]; // seteamos el nuevo nombre del usuario
                         curr_user.sockfd = sockfd;
                         curr_user.password = data[1];
-                        ActiveUsers[data[0]] = curr_user;
+                        ActiveUsers[username] = curr_user;
                         send(curr_user.sockfd, "Lok", 3, 0);
                     }
                     else
@@ -159,17 +160,7 @@ namespace odp
 
                     std::string destinatario = data[1]; //obtener el destinatario B
 
-                    std::cout << "Destinatario:" << destinatario << std::endl;
-
-                    //---------------Obtener el remitente y actualizar username ban Saul
-                    for (auto &user : ActiveUsers)
-                        if (sockfd == user.second.sockfd)
-                        {
-                            username = user.first;
-                            break;
-                        }
-                    //------------------
-                    
+                    std::cout << "Destinatario:" << destinatario << std::endl;  
                     std::cout << "Remitente:" << username << std::endl;
 
                     // validamos la existencia del usuario
@@ -200,7 +191,7 @@ namespace odp
                 {
                     // EJEMPLO [user->server]
                     // b004Hola
-
+                    clog::ConsoleOutput::print("Entraste a Brodcast Mensaje");
                     nbytes = recv(curr_user.sockfd, buffer_header, sizem, 0);
                     buffer_header[nbytes] = '\0';
 
@@ -215,9 +206,22 @@ namespace odp
                     // data = [msg] = [hola]
                     data = ServerParser.getContentInTokens(message);
 
+                    
+                    std::cout << "Remitente:" << username << std::endl;
+                    //------------------
                     // B00405holajulio
                     std::vector<std::string> send_data({data[0], username});
+
+                    clog::ConsoleOutput::print("Mensaje:");
+                    clog::ConsoleOutput::print(data[0]);
+                    clog::ConsoleOutput::print("Username");
+                    clog::ConsoleOutput::print(username);
+
+
                     message = odp::ConstructorMessage::buildMessage(send_data, 'B', odp::SenderType::Server);
+
+                    clog::ConsoleOutput::print("Mensaje Listo:");
+                    clog::ConsoleOutput::print(message);
 
                     // enviamos el mensaje a todos los usuarios, excepto al que lo envió
                     for (auto &User : ActiveUsers)
@@ -225,6 +229,7 @@ namespace odp
                         if (User.first != username)
                             write(User.second.sockfd, message.c_str(), message.size());
                     }
+                    clog::ConsoleOutput::print("Final del For");
                     break;
                 }
                 case odp::CommandType::UploadFile:

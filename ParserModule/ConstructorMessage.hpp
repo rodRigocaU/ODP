@@ -27,7 +27,7 @@ namespace odp
     {
       std::pair<CommandType, std::vector<uint8_t>> settings = CommandSettings::getSettings(std::tolower(command), senderType);
       std::string buildedMessage;
-      // Agregar tokens
+      // Agregar comando
       buildedMessage.push_back(command);
 
       if(settings.first == CommandType::AskList && senderType == SenderType::Server)
@@ -55,13 +55,12 @@ namespace odp
           
           
       }
-      clog::ConsoleOutput::print("Done Else For");
 
       // agregamos el contenido del mensaje
       for (const std::string &elem : data)
         buildedMessage += elem;
       
-      clog::ConsoleOutput::print("Done For");
+      clog::ConsoleOutput::print("Done");
       
 
       return buildedMessage;

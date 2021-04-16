@@ -6,7 +6,7 @@
 
 int main()
 {
-  clog::ConsoleOutput::enableOutput(1);
+  clog::ConsoleOutput::enableOutput(0);
   struct sockaddr_storage their_addr; // se utilizará en la función accept()
   socklen_t addr_size;                // se utilizará en la función accept()
 
