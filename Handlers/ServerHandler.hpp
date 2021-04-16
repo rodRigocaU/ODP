@@ -29,7 +29,7 @@ namespace odp
         //y escucharemos todas sus peticiones
         void handleuser(int sockfd)
         {
-            std::string username; // el nombre usuario que será aceptado
+            std::string username = ""; // el nombre usuario que será aceptado
             ActiveUser curr_user; // current user
 
             char buffer_token[2];           // l,i,m,u,x,etc
@@ -49,18 +49,21 @@ namespace odp
                 message.clear();
 
                 nbytes = recv(sockfd, buffer_token, 1, 0);
-
+                
                 buffer_token[1] = '\0';
                 clog::ConsoleOutput::print("Token: ");
                 clog::ConsoleOutput::print(buffer_token);
                 std::cout << buffer_token << nbytes << std::endl;
                 std::cout << "Cantidad de Usuarios:" << ActiveUsers.size() << std::endl;
                 // ga+=1;
-
+                
                 // if (nbytes == 0)
                 if (nbytes <= 0)
                 {
                     clog::ConsoleOutput::print("Error inesperado cerrar conexión");
+                    if(!username.emppty()) // también se debe eliminar al usuario de la estructura
+                        ActiveUser.erase(username); // significa que el usuario salió forzadamente
+                        
                     shutdown(sockfd, SHUT_RDWR);
                     close(sockfd);
                     return;
@@ -70,7 +73,6 @@ namespace odp
 
                 // el tamaño del header dependiendo del comando
                 sizem = ServerParser.getHeaderSize(odp::SenderType::User, buffer_token[0]);
-
                 // Aqui debemos conseguir las respuesra
                 switch (ServerParser.getCommandType())
                 {
@@ -96,14 +98,11 @@ namespace odp
                     // newuserdata = [<username>, <password>]
                     data = ServerParser.getContentInTokens(message);
 
-                    clog::ConsoleOutput::print("GaData");
-
                     /* aquí podría iniciarse la función registrar()*/
                     /* si el usuario no está registrado lo registramos */
                     // if (ActiveUsers.find(data[0]) != ActiveUsers.end())
                     if (ActiveUsers.find(data[0]) == ActiveUsers.end())
                     {
-                        clog::ConsoleOutput::print("GaIF");
                         username = data[0]; // seteamos el nuevo nombre del usuario
                         curr_user.sockfd = sockfd;
                         curr_user.password = data[1];
@@ -112,12 +111,15 @@ namespace odp
                     }
                     else
                     {
-                        clog::ConsoleOutput::print("GaElse");
                         std::vector<std::string> err({ERROR_MESSAGE_LOGIN});
+                        clog::ConsoleOutput::print(err[0]);
+                        
                         message = odp::ConstructorMessage::buildMessage(err, 'E', odp::SenderType::Server);
 
                         clog::ConsoleOutput::print(message);
-                        send(curr_user.sockfd, message.c_str(), message.size(), 0);
+                        // solo se envía el mensaje a sockfd, porque curr_user tiene el sockfd del usuario
+                        // ya registrado, cuyo username es igual con el que este usuario desea ingresar
+                        send(sockfd, message.c_str(), message.size(), 0); 
                     }
                     break;
                 }

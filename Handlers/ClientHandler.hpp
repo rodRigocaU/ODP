@@ -293,7 +293,6 @@ namespace odp
                 std::cout << "Destino: ";
                 std::getline(std::cin, destino);
 
-                std::vector<std::string> data;
                 data.push_back(mensaje);
                 data.push_back(destino);
 
@@ -313,7 +312,6 @@ namespace odp
                 std::cout << "Mensaje: ";
                 std::getline(std::cin, mensaje);
 
-                std::vector<std::string> data;
                 data.push_back(mensaje);
                 
                 std::string message = odp::ConstructorMessage::buildMessage(data, 'b', odp::SenderType::User);

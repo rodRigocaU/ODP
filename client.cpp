@@ -30,20 +30,25 @@ int main()
 
   while (strcmp(answer,"Lok"))
   {
-    // answer.clear();
+    // agrego esto porque fallaba al intentar reinsertar otro nombre de usuario, porque el primero fué rechazado
+    send_data[0].clear(); 
+    send_data[1].clear();
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
     std::cout << "Ingrese Nombre de usuario y password:" << std::endl;
 
     std::cout << "Username:";
     std::getline(cin, send_data[0]);
     std::cout << "Password:";
     odp::getPassword(send_data[1]);
+    
     std::string message = odp::ConstructorMessage::buildMessage(send_data, 'l', odp::SenderType::User);
 
     int n = write(sockfd, message.c_str(), message.length());
 
-    char buffer[4];
-    n = read(sockfd, buffer, 4);
-    buffer[3]='\0';
+    char buffer[30];
+    n = read(sockfd, buffer, 30);
+    buffer[n]='\0';
     strcpy(answer,buffer);
 
     //---------------------
