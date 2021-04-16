@@ -57,12 +57,13 @@ namespace odp
                 std::cout << "Cantidad de Usuarios:" << ActiveUsers.size() << std::endl;
                 // ga+=1;
                 
+                
                 // if (nbytes == 0)
                 if (nbytes <= 0)
                 {
-                    clog::ConsoleOutput::print("Error inesperado cerrar conexión");
-                    if(!username.emppty()) // también se debe eliminar al usuario de la estructura
-                        ActiveUser.erase(username); // significa que el usuario salió forzadamente
+                    // clog::ConsoleOutput::print("Error inesperado cerrar conexión");
+                    if(!username.empty()) // también se debe eliminar al usuario de la estructura
+                        ActiveUsers.erase(username); // significa que el usuario salió forzadamente
                         
                     shutdown(sockfd, SHUT_RDWR);
                     close(sockfd);
@@ -299,8 +300,9 @@ namespace odp
                 {
                     // julio envía el mensaje de salida al usuario
                     // x
-                    ActiveUsers.erase(username);       // eliminamos al usuario de la estructura
+                    clog::ConsoleOutput::print("Exit");
                     send(curr_user.sockfd, "X", 1, 0); // solo enviamos una X al usuario
+                    ActiveUsers.erase(username);       // eliminamos al usuario de la estructura
                     close(curr_user.sockfd);
                     return; // finalizamos la función
                     break;

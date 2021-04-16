@@ -23,6 +23,7 @@
 #define GRN "\e[0;32m"
 #define CYN "\e[0;36m"
 #define REDB "\e[41m"
+#define VIO "\e[35m"
 
 
 void get_in_information(struct sockaddr_storage *their_addr)
@@ -35,8 +36,8 @@ void get_in_information(struct sockaddr_storage *their_addr)
       char ip4[INET_ADDRSTRLEN];                                               // space to hold the IPv4 string
       inet_ntop(AF_INET, &(temp_sockaddr_in->sin_addr), ip4, INET_ADDRSTRLEN); // network to presentation
 
-      std::cout << "Dirección IPv4 del cliente: " << ip4 << std::endl;
-      std::cout << "Puerto del cliente: " << ntohs(temp_sockaddr_in->sin_port) << std::endl;
+      std::cout << GRN "Dirección IPv4 del cliente: " NC<< ip4 << std::endl;
+      std::cout << GRN "Puerto del cliente: " NC<< ntohs(temp_sockaddr_in->sin_port) << std::endl;
     }
   else
     {
@@ -46,8 +47,8 @@ void get_in_information(struct sockaddr_storage *their_addr)
       char ip6[INET6_ADDRSTRLEN];                                                  // space to hold the IPv6 string
       inet_ntop(AF_INET6, &(temp_sockaddr_in6->sin6_addr), ip6, INET6_ADDRSTRLEN); // network to presentation
 
-      std::cout << "Dirección IPv6 del cliente: " << ip6 << std::endl;
-      std::cout << "Puerto del cliente: " << ntohs(temp_sockaddr_in6->sin6_port) << std::endl;
+      std::cout << GRN "Dirección IPv6 del cliente:"  NC<< ip6 << std::endl;
+      std::cout << GRN "Puerto del cliente: " NC<< ntohs(temp_sockaddr_in6->sin6_port) << std::endl;
     }
 }
 
@@ -81,7 +82,7 @@ void setmainsock(struct addrinfo *res, int &sockfd, int BACKLOG = 10, bool is_se
   sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
 
   if (sockfd == -1){
-    printf("error creating socket");
+    printf(RED "error creating socket" NC);
     exit(1);
   }
 
@@ -89,7 +90,7 @@ void setmainsock(struct addrinfo *res, int &sockfd, int BACKLOG = 10, bool is_se
   // para evitar el mensaje de error "Address already in use", cuando olvidamos cerrar el socket
   if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
   {
-    perror("setsockopt");
+    perror(RED "setsockopt" NC);
     exit(1);
   }
 
@@ -99,7 +100,7 @@ void setmainsock(struct addrinfo *res, int &sockfd, int BACKLOG = 10, bool is_se
     // int bind(int sockfd, struct sockaddr *my_addr, int addrlen);
     if (-1 == bind(sockfd, res->ai_addr, res->ai_addrlen))
       {
-        perror("error bind failed");
+        perror(RED "error bind failed" NC);
         close(sockfd);
         exit(EXIT_FAILURE);
       }
@@ -108,7 +109,7 @@ void setmainsock(struct addrinfo *res, int &sockfd, int BACKLOG = 10, bool is_se
     char ipaddr[INET_ADDRSTRLEN];
     struct sockaddr_in *sa = (struct sockaddr_in *)&res->ai_addr;
     inet_ntop(AF_INET, &(sa->sin_addr), ipaddr, INET_ADDRSTRLEN);
-    std::cout << "Dirección IP del servidor: " << ipaddr << std::endl;
+    std::cout << GRN "Dirección IP del servidor: " NC<< ipaddr << std::endl;
 
 
     // hasta aquí hemos usado la variable res, así que liberamos la memoria de esta lista
@@ -119,7 +120,7 @@ void setmainsock(struct addrinfo *res, int &sockfd, int BACKLOG = 10, bool is_se
     // conexión total
     if (-1 == listen(sockfd, BACKLOG))
       {
-        perror("error listen failed");
+        perror(RED "error listen failed" NC);
         close(sockfd);
         exit(EXIT_FAILURE);
       }
@@ -128,7 +129,7 @@ void setmainsock(struct addrinfo *res, int &sockfd, int BACKLOG = 10, bool is_se
 
     if (connect(sockfd, res->ai_addr, res->ai_addrlen) == -1)
       {
-        perror("connect failed");
+        perror(RED "connect failed" NC);
         close(sockfd);
         exit(EXIT_FAILURE);
       }

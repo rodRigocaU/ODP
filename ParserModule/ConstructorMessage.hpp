@@ -43,8 +43,7 @@ namespace odp
       }
       else
       {
-        std::cout<< data[1] <<std::endl;
-
+        
         //servidor chiste 
         std::size_t idx = 0;
         for (uint8_t &nDigits : settings.second){
