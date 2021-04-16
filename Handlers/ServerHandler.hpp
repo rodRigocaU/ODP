@@ -112,15 +112,14 @@ namespace odp
                     }
                     else
                     {
-                        std::vector<std::string> err({ERROR_MESSAGE_LOGIN});
-                        clog::ConsoleOutput::print(err[0]);
-                        
-                        message = odp::ConstructorMessage::buildMessage(err, 'E', odp::SenderType::Server);
+                        std::string err = ERROR_MESSAGE_LOGIN;
+                        err.insert(0, 1, 'E');
+
 
                         clog::ConsoleOutput::print(message);
                         // solo se envía el mensaje a sockfd, porque curr_user tiene el sockfd del usuario
                         // ya registrado, cuyo username es igual con el que este usuario desea ingresar
-                        send(sockfd, message.c_str(), message.size(), 0); 
+                        send(sockfd, err.c_str(), err.size(), 0); 
                     }
                     break;
                 }
@@ -184,9 +183,9 @@ namespace odp
                     {
                         clog::ConsoleOutput::print("No Encontre al sujeto");
                         // el usuario no existe, error
-                        std::vector<std::string> err({data[0], username});
-                        message = odp::ConstructorMessage::buildMessage(err, 'E', odp::SenderType::Server);
-                        send(curr_user.sockfd, message.c_str(), message.size(), 0);
+                        std::string err = ERROR_USER_NOT_FOUND;
+                        err.insert(0, 1, 'E');
+                        send(curr_user.sockfd, err.c_str(), err.size(), 0);
                     }
                     break;
                 }
@@ -267,9 +266,9 @@ namespace odp
                     else
                     {
                         // el usuario no existe, error
-                        std::vector<std::string> err({ERROR_USER_NOT_FOUND});
-                        message = odp::ConstructorMessage::buildMessage(err, 'E', odp::SenderType::Server);
-                        send(curr_user.sockfd, message.c_str(), message.size(), 0);
+                        std::string err = ERROR_USER_NOT_FOUND;
+                        err.insert(0, 1,'E');
+                        send(curr_user.sockfd, err.c_str(), err.size(), 0);
                     }
                     break;
                 }
@@ -309,10 +308,10 @@ namespace odp
                 }
                 case odp::CommandType::None:
                 {
-                    std::vector<std::string> err({ERROR_MESSAGE_NOT_IN_PROTOCOL});
-                    message = odp::ConstructorMessage::buildMessage(err, 'E', odp::SenderType::Server);
+                    std::string err = ERROR_MESSAGE_NOT_IN_PROTOCOL;
+                    err.insert(0, 1,'E');
                     // enviamos un error
-                    send(curr_user.sockfd, message.c_str(), message.size(), 0);
+                    send(curr_user.sockfd, err.c_str(), err.size(), 0);
                     break;
                 }
                 default:
