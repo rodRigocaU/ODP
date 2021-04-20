@@ -43,7 +43,8 @@ std::size_t BufferParser::getHeaderSize(SenderType senderType, const char& comma
   for(std::vector<uint8_t>::iterator::reference nDigit : settings.second){
     sumOfBytes += static_cast<std::size_t>(nDigit);
   }
-  return ((settings.first == CommandType::AskList)?settings.second[0]:sumOfBytes);
+
+  return ((settings.first == CommandType::AskList)?(senderType == odp::SenderType::User)?0:settings.second[0]:sumOfBytes);
 }
 
 std::size_t BufferParser::getContentSize(const std::string& headerString){

@@ -57,7 +57,6 @@ namespace odp
                 std::cout << "Cantidad de Usuarios:" << ActiveUsers.size() << std::endl;
                 // ga+=1;
                 
-                
                 // if (nbytes == 0)
                 if (nbytes <= 0)
                 {
@@ -71,9 +70,10 @@ namespace odp
                 }
 
                 //------------Bien
-
                 // el tamaño del header dependiendo del comando
+                
                 sizem = ServerParser.getHeaderSize(odp::SenderType::User, buffer_token[0]);
+
                 // Aqui debemos conseguir las respuesra
                 switch (ServerParser.getCommandType())
                 {
@@ -85,7 +85,6 @@ namespace odp
                     nbytes = recv(sockfd, buffer_header, sizem, 0);
                     message = buffer_header;
                     //0402
-                    // std::cout <<"Mensaje:"<<message<<"\n";
 
                     // leer cuerpo del mensaje
                     sizem = ServerParser.getContentSize(message);
@@ -93,8 +92,6 @@ namespace odp
                     buffer_content[nbytes] = '\0';
                     message = buffer_content;
 
-                    // luisll
-                    // std::cout << "Mensaje:" << message << "\n";
 
                     // newuserdata = [<username>, <password>]
                     data = ServerParser.getContentInTokens(message);
@@ -125,8 +122,7 @@ namespace odp
                 }
                 case odp::CommandType::AskList:
                 {
-                    clog::ConsoleOutput::print("Entraste a AskList");
-
+                    clog::ConsoleOutput::print("asklist");
                     // agregamos a data todos los nombres de los usuarios
                     for (auto &activeuser : ActiveUsers)
                     {
@@ -138,14 +134,10 @@ namespace odp
                     clog::ConsoleOutput::print(message);
 
                     nbytes = write(curr_user.sockfd, message.c_str(), message.size());
-
-                    std::cout << "Bytes enviados como listas: " << nbytes << std::endl;
-
                     break;
                 }
                 case odp::CommandType::UserMessage:
                 {
-                    clog::ConsoleOutput::print("Entraste a UserMessage");
                     // julio envía un "hola" a pancho
                     // protocolo: m00405holapancho
                     // leemos el header
@@ -162,26 +154,19 @@ namespace odp
 
                     std::string destinatario = data[1]; //obtener el destinatario B
 
-                    std::cout << "Destinatario:" << destinatario << std::endl;  
-                    std::cout << "Remitente:" << username << std::endl;
 
                     // validamos la existencia del usuario
                     if (ActiveUsers.find(destinatario) != ActiveUsers.end())
                     {
-                        clog::ConsoleOutput::print("Encontre al sujeto");
                         // el usuario existe
                         // enviamos esto a pancho: M00405holajulio
                         std::vector<std::string> send_data({data[0], username});
                         message = odp::ConstructorMessage::buildMessage(send_data, 'M', odp::SenderType::Server);
-                        //-------------------------------------------------------
-                        std::cout << "Mensaje Enviar:" << message << std::endl;
-                        //-------------------------------------------------------
                         // enviamos el mensaje al sockfd del destinatario
                         write(ActiveUsers[destinatario].sockfd, message.c_str(), message.size());
                     }
                     else
                     {
-                        clog::ConsoleOutput::print("No Encontre al sujeto");
                         // el usuario no existe, error
                         std::string err = ERROR_USER_NOT_FOUND;
                         err.insert(0, 1, 'E');
@@ -193,7 +178,6 @@ namespace odp
                 {
                     // EJEMPLO [user->server]
                     // b004Hola
-                    clog::ConsoleOutput::print("Entraste a Brodcast Mensaje");
                     nbytes = recv(curr_user.sockfd, buffer_header, sizem, 0);
                     buffer_header[nbytes] = '\0';
 
@@ -209,21 +193,11 @@ namespace odp
                     data = ServerParser.getContentInTokens(message);
 
                     
-                    std::cout << "Remitente:" << username << std::endl;
-                    //------------------
                     // B00405holajulio
                     std::vector<std::string> send_data({data[0], username});
 
-                    clog::ConsoleOutput::print("Mensaje:");
-                    clog::ConsoleOutput::print(data[0]);
-                    clog::ConsoleOutput::print("Username");
-                    clog::ConsoleOutput::print(username);
-
-
                     message = odp::ConstructorMessage::buildMessage(send_data, 'B', odp::SenderType::Server);
 
-                    clog::ConsoleOutput::print("Mensaje Listo:");
-                    clog::ConsoleOutput::print(message);
 
                     // enviamos el mensaje a todos los usuarios, excepto al que lo envió
                     for (auto &User : ActiveUsers)
@@ -231,7 +205,6 @@ namespace odp
                         if (User.first != username)
                             write(User.second.sockfd, message.c_str(), message.size());
                     }
-                    clog::ConsoleOutput::print("Final del For");
                     break;
                 }
                 case odp::CommandType::UploadFile:
@@ -299,7 +272,6 @@ namespace odp
                 {
                     // julio envía el mensaje de salida al usuario
                     // x
-                    clog::ConsoleOutput::print("Exit");
                     send(curr_user.sockfd, "X", 1, 0); // solo enviamos una X al usuario
                     ActiveUsers.erase(username);       // eliminamos al usuario de la estructura
                     close(curr_user.sockfd);

@@ -12,7 +12,7 @@ using namespace std;
 
 int main()
 {
-  clog::ConsoleOutput::enableOutput(1);
+  clog::ConsoleOutput::enableOutput(0);
   struct addrinfo *res;
 
   setaddressinfo(CIPSERVER, CPORT, res, false);

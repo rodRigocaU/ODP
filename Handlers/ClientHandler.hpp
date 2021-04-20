@@ -8,7 +8,6 @@
 
 namespace odp
 {
-    bool acceptingFile = 0; // we are not acepting file yet
     class ClientHandler
     {
     private:
@@ -27,7 +26,6 @@ namespace odp
 
         void handlerecv()
         {
-
             char buffer_token[2];           // l,i,m,u,x,etc
             char buffer_header[99 * 2 + 2]; // I03110305SantistebanLeePeter -> pasar en string 110305
             char buffer_content[100000];
@@ -46,50 +44,27 @@ namespace odp
                 nbytes = recv(sockfd, buffer_token, 1, 0);
 
                 buffer_token[1] = '\0';
-                //--------------------------------
-                //std::cout << "Bytes leidos desde el cliente: " << nbytes << '\n';
-                //std::cout << "Bytes leidos desde el cliente: " << nbytes << '\n';
-                //std::cout << "Token: " << buffer_token << '\n';
-                //-----------------------------------------------------------
 
                 // el tamaño del header dependiendo del comando
                 sizem = ClientParser.getHeaderSize(odp::SenderType::Server, buffer_token[0]);
 
-                //-------------------------------------------------------------
-                //std::cout << "Size del header: " << sizem << '\n';
-                //-------------------------------------------------------------
 
                 switch (ClientParser.getCommandType())
                 {
                 case odp::CommandType::AskList:
                 {
-                    clog::ConsoleOutput::print(NC"Entramos AskList ");
                     // supongamos que nos llega el mensaje: I03110305SantistebanLeePeter
                     // primero leemos el header
                     nbytes = recv(sockfd, buffer_header, sizem, 0);
                     buffer_header[nbytes] = '\0';
 
-                    clog::ConsoleOutput::print(NC "Segunda lectura");
-                    clog::ConsoleOutput::print(buffer_header);
-
                     message = buffer_header;
-                    //-------------------------------------------
-                    std::cout << message << std::endl;
-                    //--------------------------------------------
 
-                    // stringstream ss;
-                    // ss << message;
-                    // ss >> sizem;
-                    //Esta bien cagada
                     sizem = std::stoi(message) * 2; //6
-                    std::cout << sizem << std::endl;
 
                     nbytes = recv(sockfd, buffer_header, sizem, 0);
                     message = message + buffer_header; //110503
 
-                    // clog::ConsoleOutput::print("Mensaje: ");
-                    // clog::ConsoleOutput::print(buffer_header);
-                    std::cout << message << std::endl;
 
                     //Enviar concatenado 0104... no body
                     sizem = ClientParser.getContentSize(message); //18 = 11+05+03
@@ -155,7 +130,6 @@ namespace odp
                 {
                     // julio nos envió un archivo llamado [hola.txt] y su contenido es "hola_pancho"
                     // ejemplo: u008000000001005hola.txthola_panchojulio
-                    acceptingFile = 1; // now we are accepting a file
                     nbytes = recv(sockfd, buffer_header, sizem, 0);
                     buffer_header[nbytes] = '\0';
 
@@ -170,16 +144,13 @@ namespace odp
                     data = ClientParser.getContentInTokens(message);
 
 
-                    // char accept; // char para aceptar el archivo
+                    char accept = 'y'; // char para aceptar el archivo
                     std::cout << VIO "\nNuevo archivo \"" GRN << data[0]  << VIO "\" de [" GRN <<  data[2] << VIO "] aceptar [y/n]?: " NC;
 
-                    if (getchar() == 'y')
+                    if (accept == 'y')
                     {
-                        acceptingFile = 0; // again we are not accepting a file
                         std::ofstream newFile;
                         newFile.open(data[0]);
-                        // clog::ConsoleOutput::print("Data 1:");
-                        // clog::ConsoleOutput::print(data[1]);
                         newFile << data[1];
                         newFile.close();
                         std::cout << VIO "\nNuevo archivo \"" GRN <<  data[0] << VIO "\" escrito.\n" NC;
@@ -219,7 +190,7 @@ namespace odp
                     // el server aceptó tu retiro del chat, X
                     std::cout << VIO "[ODP]>> Saliendo del sistema usuario [" GRN << username << VIO "]..." NC<< '\n';
                     close(sockfd); // cerramos nuestro socket
-                    exit(1);       // finalizamos todo el grama
+                    exit(0);       // finalizamos todo el grama
                     break;
                 }
                 case odp::CommandType::Error:
@@ -339,6 +310,7 @@ namespace odp
                 // okidoki (si existe u otro usuario)
                 std::ifstream File_Reader;
                 data.resize(3);
+                data[1] = "";
                 std::cout << VIO  "[ODP]>> Nombre del archivo:" NC;
                 std::getline(std::cin, data[0]);
                 
@@ -351,6 +323,7 @@ namespace odp
                         line += '\n'; 
                         data[1] += line;
                     }
+                    clog::ConsoleOutput::print(data[1]);
                     File_Reader.close();
                     std::cout << VIO "[ODP]>> Nombre del destinatario:" NC;
                     std::getline(std::cin, data[2]);
@@ -359,11 +332,10 @@ namespace odp
                     std::string package = odp::ConstructorMessage::buildMessage(data, 'u', odp::SenderType::User);
                     //Eliminar cout
                     clog::ConsoleOutput::print("Paquete:");
-                    // clog::ConsoleOutput::print(package);
                     write(sockfd, package.c_str(), package.length());
                 }
                 else{
-                    std::cout << "El archivo \"" << data[0] << "\" no puedo ser abierto\n";
+                    std::cout << "El archivo \"" << data[0] << "\" no pudo ser abierto\n";
                 }
                 
                 break;
@@ -407,28 +379,21 @@ namespace odp
                 message.clear();
                 std::cout << VIO "[ODP]: Estoy esperando un comando...\n" NC;
                 std::getline(std::cin, message);
-                if(acceptingFile) // we are not be able to send any code until the user accept a file
-                {
-                    continue;
-                }    
 
+                if(message.empty())
+                    continue;
                 if (message == "help")
                     help();
                 else
                 {
                     //Hacer que pida el comando luego respectivamente que pida los cuertpos de los mensajes no pedira el tamaño la funcio nde italo nos dara el mensaje concatenado y listo
-
+                    if (message.empty())
+                        continue;
                     if (message.length() > 2)
                         std::cout << RED "No es un comando valido" NC<< std::endl;
 
                     else
                         send_message(message);
-                    
-
-                    // int n = write(sockfd, message.c_str(), message.length());
-
-                    // clog::ConsoleOutput::print("Bytes enviados:");
-                    // std::cout << n << std::endl;
                 }
             }
         }

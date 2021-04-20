@@ -19,7 +19,9 @@ private:
   CommandSettings();
 public:
   static CommandSettings& getGlobalCommandSettings();
-  static std::pair<CommandType, std::vector<uint8_t>>& getSettings(const char& command, SenderType senderType);
+  //static std::pair<CommandType, std::vector<uint8_t>>& getSettings(const char& command, SenderType senderType);
+  static std::pair<CommandType, std::vector<uint8_t>> getSettings(const char& command, SenderType senderType);
+
 };
 
 //|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -50,7 +52,7 @@ CommandSettings& CommandSettings::getGlobalCommandSettings(){
   return INSTANCE_COMMAND_SETTINGS;
 }
 
-std::pair<CommandType, std::vector<uint8_t>>& CommandSettings::getSettings(const char& command, SenderType senderType){
+std::pair<CommandType, std::vector<uint8_t>> CommandSettings::getSettings(const char& command, SenderType senderType){
   std::unordered_map<char, Settings>::iterator it;
   if(senderType == SenderType::User){
     it = getGlobalCommandSettings().user2server.find(command);
@@ -62,7 +64,7 @@ std::pair<CommandType, std::vector<uint8_t>>& CommandSettings::getSettings(const
     if(it != getGlobalCommandSettings().server2user.end())
       return it->second;
   }
-  return it->second;
+  return std::make_pair(CommandType::None, std::vector<uint8_t>());
 }
 
 }

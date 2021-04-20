@@ -47,8 +47,6 @@ namespace odp
         //servidor chiste 
         std::size_t idx = 0;
         for (uint8_t &nDigits : settings.second){
-            // std::cout<< buildedMessage <<std::endl; //M -> M004 -> 
-            std::cout<< data[idx].length() <<std::endl; 
             buildedMessage += fitDigits(data[idx++].length(), nDigits);
         }
           
