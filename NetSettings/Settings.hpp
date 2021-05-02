@@ -1,8 +1,13 @@
 #ifndef SETTINGS_HPP_
 #define SETTINGS_HPP_
 
-// char CPORT[]     =  "50001";
-char CPORT[]     =  "4500";
+/*
+// EXTERNAL SERVER GOOGLE CLOUD
+char CPORT[]     =  "45000";
+char CIPSERVER[] =  "34.94.147.12";
+*/
+// LOCAL SERVER 
+char CPORT[]     =  "45000";
 char CIPSERVER[] =  "127.0.0.1";
 
 

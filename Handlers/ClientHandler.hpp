@@ -15,13 +15,16 @@ namespace odp
         std::string password;
         int sockfd;
         BufferParser ClientParser;
-
+        bool is_accepting_file, has_accepted_file, has_rejected_file;
     public:
         ClientHandler(int _sockfd, const std::string &_username, const std::string &_password)
         {
             username = _username;
             password = _password;
             sockfd = _sockfd;
+            is_accepting_file = false; // initially user is not accepting any file 
+            has_accepted_file = false; // the user not accepted yet any file
+            has_rejected_file = false;
         }
 
         void handlerecv()
@@ -128,6 +131,8 @@ namespace odp
                 }
                 case odp::CommandType::UploadFile:
                 {
+                    is_accepting_file = true;
+
                     // julio nos envió un archivo llamado [hola.txt] y su contenido es "hola_pancho"
                     // ejemplo: u008000000001005hola.txthola_panchojulio
                     nbytes = recv(sockfd, buffer_header, sizem, 0);
@@ -145,9 +150,11 @@ namespace odp
 
 
                     char accept = 'y'; // char para aceptar el archivo
-                    std::cout << VIO "\nNuevo archivo \"" GRN << data[0]  << VIO "\" de [" GRN <<  data[2] << VIO "] aceptar [y/n]?: " NC;
-
-                    if (accept == 'y')
+                    std::cout << VIO "\nNuevo archivo \"" GRN << data[0]  << VIO "\" recibido, de [" GRN <<  data[2] << VIO "]" NC;
+                    std::cout << VIO "\nEscribe \"" GRN << "f"  << VIO "\" para aceptar el documento\n" NC;
+                    
+                    while(!has_accepted_file && !has_rejected_file);
+                    if (has_accepted_file)
                     {
                         std::ofstream newFile;
                         newFile.open(data[0]);
@@ -156,20 +163,24 @@ namespace odp
                         std::cout << VIO "\nNuevo archivo \"" GRN <<  data[0] << VIO "\" escrito.\n" NC;
                         
                     }
-                    else
-                    {
-                        send_data.push_back(username);
-                        // si el archivo fué rechazado, enviamos el mensaje: f05pancho
-                        message = odp::ConstructorMessage::buildMessage(send_data, 'f', odp::SenderType::User);
-                        send(sockfd, message.c_str(), message.size(), 0); // enviamos el mensaje de error
+                    else{
+                        // data[1] = julio, el que envió el archivo
+                        send_data.push_back(data[2]);
+                        // si el archivo fué rechazado, enviamos el mensaje: f05julio
+                        std::string package = odp::ConstructorMessage::buildMessage(send_data, 'f', odp::SenderType::User);
+                        clog::ConsoleOutput::print(package);
+                        write(sockfd, package.c_str(), package.length());
                     }
+                    has_rejected_file = false;
+                    has_accepted_file = false;
+                    is_accepting_file = false;
                     break;
                 }
                 case odp::CommandType::AcceptFile:
                 {
                     // singlefile
-                    // enviaste un archivo a julio, pero julio no lo aceptó
-                    // ejemplo: f05julio
+                    // eres pancho y enviaste un archivo a julio, pero julio no lo aceptó
+                    // ejemplo: F05julio
                     // primero leemos el header
                     nbytes = recv(sockfd, buffer_header, sizem, 0); // 05
                     buffer_header[nbytes] = '\0';
@@ -344,13 +355,10 @@ namespace odp
             case odp::CommandType::AcceptFile:
             {
                 data.resize(1);
-                std::cout << VIO "[ODP]>> Aceptas el mensaje?[y/n]: " NC;
+                std::cout << VIO "[ODP]>> Aceptas el archivo?[y/n]: \n" NC;
                 char choose = getchar();
-                if(choose == 'y'){
-                    std::getline(std::cin,data[0]);
-                    std::string package = odp::ConstructorMessage::buildMessage(data, 'a', odp::SenderType::User);
-                    write(sockfd, package.c_str(), package.length());
-                }
+                if(choose != 'y') has_rejected_file = true;
+                else has_accepted_file = true;
                 break;
             }
 
@@ -386,14 +394,12 @@ namespace odp
                     help();
                 else
                 {
-                    //Hacer que pida el comando luego respectivamente que pida los cuertpos de los mensajes no pedira el tamaño la funcio nde italo nos dara el mensaje concatenado y listo
-                    if (message.empty())
-                        continue;
                     if (message.length() > 2)
                         std::cout << RED "No es un comando valido" NC<< std::endl;
-
                     else
-                        send_message(message);
+                        if(is_accepting_file) send_message("f"); // para que el usuario acepte un archivo o no
+                        else send_message(message);
+
                 }
             }
         }

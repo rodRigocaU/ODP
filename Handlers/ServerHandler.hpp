@@ -264,6 +264,9 @@ namespace odp
                     data = ServerParser.getContentInTokens(message);
                     // message = F05pancho
                     std::vector<std::string> send_data({username});
+                    clog::ConsoleOutput::print("$$");
+                    clog::ConsoleOutput::print(data[0]);
+                    clog::ConsoleOutput::print("$$");
                     message = odp::ConstructorMessage::buildMessage(send_data, 'F', odp::SenderType::Server);
                     write(ActiveUsers[data[0]].sockfd, message.c_str(), message.size());
                     break;
