@@ -234,6 +234,7 @@ namespace odp
                         // U008000000001005hola.txthola_panchojulio
                         std::vector<std::string> send_data({data[0], data[1], username});
                         message = odp::ConstructorMessage::buildMessage(send_data, 'U', odp::SenderType::Server);
+                        clog::ConsoleOutput::print(message);
                         send(ActiveUsers[destinatario].sockfd, message.c_str(), message.size(), 0);
                     }
                     else

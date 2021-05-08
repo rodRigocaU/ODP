@@ -24,6 +24,9 @@
 #define CYN "\e[0;36m"
 #define REDB "\e[41m"
 #define VIO "\e[35m"
+#define GRN2 "\e[0;32m"
+#define NC "\e[0m"
+
 
 void get_in_information(struct sockaddr_storage *their_addr)
 {
